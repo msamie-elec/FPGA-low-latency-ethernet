@@ -16,6 +16,8 @@ Open this single generated project in Vivado using File > Project > Open:
 
 The XPR is generated under ignored build/ for portability. Creation alone runs no synthesis or implementation.
 
+**XDC compatibility:** The verified legacy XDC files under `boards/arty_a7/` are hash-frozen and are NOT modified. During project generation, Vivado-compatible XDC copies are written to `build/v/xdc/A.xdc` and `build/v/xdc/B.xdc`. They retain every pin, clock and timing constraint unchanged; the only omissions are two unsupported Tcl `if` port-count guards. The checks now live in `vivado/check_mii_ports.tcl` and run after synthesis in the automated dual-target build. Existing older `v2` local projects can instead remove those two guards directly from each XDC and rerun synthesis.
+
 **Windows launch and failure behaviour:** The corrected launcher verifies the project was generated **and reopened** successfully, then starts Vivado GUI with the generated XPR. If it prints an error, leave the project unbuilt and inspect the console; a partial XPR is not a valid project. The earlier Tcl error `[Common 17-163] Missing value for option 'name'` was caused by a bare `save_project` call in the first packaging candidate. Vivado automatically saves project changes; the invalid command has been removed from both the project generator and board selector. If you downloaded a ZIP before that correction, obtain the updated branch or remove the lone `save_project` lines from both Tcl files.
 
 ## Step 2: Switch the design hierarchy AND constraints together
@@ -35,7 +37,8 @@ The helper switches BOTH the synthesis top and the matching XDC set. Do not manu
 |---|---|---|
 | Synthesis top | ethernet_generator_a7_m4c | ethernet_udp_a7_buffered |
 | Constraint set | constrs_board_a | constrs_board_b |
-| XDC | ethernet_m4c_generator.xdc | ethernet_m4b_endpoint.xdc |
+| Active GUI XDC | build/v/xdc/A.xdc | build/v/xdc/B.xdc |
+| Frozen source XDC | ethernet_m4c_generator.xdc | ethernet_m4b_endpoint.xdc |
 | FPGA part | xc7a35ticsg324-1L | xc7a35ticsg324-1L |
 | Archived output | board_A.bit | board_B.bit |
 
