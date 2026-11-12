@@ -22,6 +22,11 @@ foreach target $targets {
     if {![string match *Complete* [get_property STATUS [get_runs synth_1]]]} {
         error "Board $target synthesis failed; inspect the Vivado log"
     }
+    # Port checks must run in ordinary Tcl after opening synthesized design;
+    # the restricted XDC syntax does not support conditional Tcl statements.
+    open_run synth_1
+    source [file join $root vivado check_mii_ports.tcl]
+    close_design
     launch_runs impl_1 -to_step write_bitstream -jobs 4
     wait_on_run impl_1
     if {![string match *Complete* [get_property STATUS [get_runs impl_1]]]} {
