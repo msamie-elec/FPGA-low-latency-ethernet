@@ -1,78 +1,90 @@
-# Vivado GUI quick start — v1.0 dual-FPGA design
+# Vivado GUI quick start — ONE project, TWO FPGA boards
 
-**This is TWO independent FPGA bitstreams and two Vivado projects, not a single-board application.** The verified physical setup uses **2 × Digilent Arty A7-35T** (Artix-7 part xc7a35ticsg324-1L) connected directly through a Cat5e/Cat6 RJ45 patch cable at 100 Mb/s. Historical Arty S7 UART files are not supported targets for the final Ethernet design.
+**Physical requirement:** two Digilent Arty A7-35T FPGAs directly connected over 100 Mb/s Ethernet. The repository creates **ONE editable Vivado GUI project** containing both independent RTL tops, two mutually exclusive XDC constraint sets and a combined two-board simulation. Each board still requires a separate bitstream. Historical Arty S7 UART examples are not supported for the final Ethernet implementation.
 
-## Inspect RTL hierarchy — no physical boards required
+## Step 1: Generate and open ONE Vivado .xpr
 
-Use AMD **Vivado 2025.2.1**. Clone/download the repository to a writable folder. On Windows **double-click vivado/create_gui_projects.cmd**, or run from a Vivado-enabled shell at the repository root:
+With Vivado 2025.2.1 installed, Windows users can double-click vivado/create_project.cmd. Alternatively, from a Vivado-enabled shell:
 
-    vivado -mode batch -source vivado/create_gui_projects.tcl -tclargs both
+    vivado -mode batch -source vivado/create_project.tcl
 
-This creates two *source-managed* editable GUI projects without running synthesis:
+Open this single generated project in Vivado using File > Project > Open:
 
-| Open this generated .xpr in Vivado | Design Sources synthesis top | Constraint file |
+    build/vivado_gui/FPGA_Low_Latency_Ethernet/FPGA_Low_Latency_Ethernet.xpr
+
+The XPR is generated under ignored build/ for portability. Creation alone runs no synthesis or implementation.
+
+## Step 2: Switch the design hierarchy AND constraints together
+
+In Vivado Tcl Console, change directory to the repository root and run:
+
+    source vivado/board_config.tcl
+    fpga_select_board A
+
+Expand Design Sources to inspect Board A. To inspect Board B, run:
+
+    fpga_select_board B
+
+The helper switches BOTH the synthesis top and the matching XDC set. Do not manually change the top alone without also changing the constraints. Old synth_1/impl_1 runs are reset when changing targets; completed bitstreams and available reports are archived before switching.
+
+| Target | Board A traffic generator | Board B buffered endpoint |
 |---|---|---|
-| build/vivado_gui/board_a_generator/board_a_generator.xpr | ethernet_generator_a7_m4c | boards/arty_a7/ethernet_m4c_generator.xdc |
-| build/vivado_gui/board_b_endpoint/board_b_endpoint.xpr | ethernet_udp_a7_buffered | boards/arty_a7/ethernet_m4b_endpoint.xdc |
+| Synthesis top | ethernet_generator_a7_m4c | ethernet_udp_a7_buffered |
+| Constraint set | constrs_board_a | constrs_board_b |
+| XDC | ethernet_m4c_generator.xdc | ethernet_m4b_endpoint.xdc |
+| FPGA part | xc7a35ticsg324-1L | xc7a35ticsg324-1L |
+| Archived output | board_A.bit | board_B.bit |
 
-Select **File → Project → Open** in Vivado, then expand **Design Sources**. The other board's RTL is added as **Simulation Sources only**, so the two independent synthesis hierarchies remain separate. Both projects include tb_m4c_board_pair.sv for a virtual link between the FPGA designs.
+**Board A hierarchy:** 100 MHz request scheduler and sequence scoreboard in the top; MII feed transmitter mii_feed_tx, reply receiver mii_reply_rx, UART modules uart_rx and uart_tx.
 
-Auto-generated projects live in ignored build/ because XPR files may capture local paths and tool state. Re-run the portable Tcl after relocating the checkout.
+**Board B hierarchy:** Ethernet RX mii_udp_rx_m4b, 16-entry asynchronous RX FIFO, 100 MHz feed_pipeline with feed_parser / top_of_book, 16-entry asynchronous reply FIFO into mii_udp_tx_m4b, and separate 8-entry synchronous UART diagnostic FIFO plus uart_tx.
 
-### Board A (traffic generator and validator)
+Both synthesis top modules appear in Design Sources, but **only the selected module is synthesized as top**. The other is not instantiated by it.
 
-- Top: ethernet_generator_a7_m4c
-- Ethernet MII request TX: mii_feed_tx
-- Ethernet reply RX: mii_reply_rx
-- Host UART interface: uart_rx / uart_tx
-- Timing scheduler and sequence scoreboard are implemented inside the top module.
+## Step 3: Simulate BOTH FPGA designs together
 
-### Board B (buffered market-data endpoint)
+Simulation Sources has a separate top, tb_m4c_board_pair, that instantiates both FPGAs and connects them over an idealized MII link. This simulation top remains the same regardless of the selected synthesis board.
 
-- Top: ethernet_udp_a7_buffered
-- Ethernet/FCS/IPv4/UDP RX: mii_udp_rx_m4b
-- Dual-clock receive/transmit queues: m4b_async_fifo, instantiated twice
-- Processing core: feed_pipeline, feed_parser, top_of_book
-- Ethernet UDP reply TX: mii_udp_tx_m4b
-- Independent diagnostic UART queue: m4b_sync_fifo and uart_tx
+In Vivado select Run Simulation > Run Behavioral Simulation and enter in the XSim console:
 
-Processing uses a 100 MHz FPGA clock; Ethernet PHY MII RX/TX uses 25 MHz clock domains. This is a deliberately fixed-format laboratory UDP design, not a general-purpose network stack.
+    run all
 
-## Simulate
-
-In either Vivado project select **Run Simulation → Run Behavioral Simulation** and enter **run all** in the XSim Tcl console. Simulation top: tb_m4c_board_pair, idealized direct MII connection, three A/B/C profiles with eight packets each. Expected success banner:
-
-    PASS tb_m4c_board_pair: three hardware-paced profiles and reply scoreboard
-
-Run the six final RTL tests in Icarus on Windows or Linux:
+Look for the PASS tb_m4c_board_pair completion message. PHY analog/electrical timing is not simulated. The independent Icarus suite has six final testbenches:
 
     python scripts/run_final_rtl.py
 
-This requires iverilog and vvp on PATH; it executes the five M4B benches and the M4C dual-board bench. The new Vivado GUI generation workflow has **not yet been exercised in an installed Vivado session in this packaging update** and should be checked on Vivado 2025.2.1.
+This requires iverilog and vvp. GitHub Actions covers this Icarus regression but not Vivado implementation.
 
-## Build two bitstreams
+## Step 4: Generate TWO independent bitstreams from ONE project
 
-Either use Vivado GUI **Run Synthesis → Run Implementation → Generate Bitstream**, or reproduce the original verified batch builds and reports independently:
+Recommended automated dual-target build (requires the generated XPR):
 
-    vivado -mode batch -source scripts/build_m4c_generator.tcl
-    vivado -mode batch -source scripts/build_m4b_endpoint.tcl
+    vivado -mode batch -source vivado/build_targets.tcl -tclargs both
 
-Review routed timing, CDC and external PHY interface warnings **before programming**. Positive slack does not imply formal CDC/PHY qualification. See [limitations](LIMITATIONS_V1.md).
+This builds Board A, archives its output, changes the top/XDC, then builds and archives Board B:
 
-## Physical two-board setup
+    build/vivado_outputs/board_A/board_A.bit
+    build/vivado_outputs/board_B/board_B.bit
 
-    Laptop / Host PC
-       | USB power, JTAG, UART               | USB power, JTAG, UART
-       v                                     v
-    Board A (Arty A7) <==== RJ45 ======> Board B (Arty A7)
-    Hardware-paced TX      100 Mb/s           Buffered RX/processing
-    Reply scoreboard      direct cable       Ethernet UDP reply TX
+Alternatively, in the GUI select Board A with fpga_select_board A, use Run Synthesis > Run Implementation > Generate Bitstream, then enter:
 
-Program **Board A** with the M4C generator bitstream and **Board B** with the M4B buffered endpoint bitstream. Press and release BTN0 on both; verify Ethernet link. COM4 and COM3 are historical serial-port examples, not fixed mappings. The laptop only sends test control over UART and reads results: traffic is FPGA-paced.
+    fpga_archive_current
+    fpga_select_board B
+
+Generate Board B's bitstream, then run fpga_archive_current. This deliberately reuses the single project's synthesis/implementation runs while preserving the two finished outputs. The original separate Vivado batch scripts remain unchanged for reproducing their historical detailed routed reports.
+
+**IMPORTANT:** This new one-project Tcl workflow was tested through Tcl mock/structural checks but has NOT yet been run inside installed AMD Vivado here. Run the first local Vivado 2025.2.1 acceptance check and examine routed timing, clock-domain crossings, PHY I/O and methodology warnings before programming newly generated bitstreams. Positive slack or a completed bitstream alone is not full PHY/CDC qualification.
+
+## Step 5: Program the TWO Arty A7-35T boards
+
+    Laptop (USB/JTAG/UART)             Laptop (USB/JTAG/UART)
+               |                                 |
+     Board A: Arty A7-35T <-- RJ45 --> Board B: Arty A7-35T
+     M4C generator/scoreboard 100 Mb/s M4B buffered endpoint
+
+Connect the boards directly by Ethernet RJ45, and each board individually to the laptop by USB. In Vivado Hardware Manager verify the JTAG device identity before programming **Board A with board_A.bit** and **Board B with board_B.bit**. Press/release BTN0 on both and check link. COM4 and COM3 are historical examples, not guaranteed port assignments. Benchmark commands use the UART port for Board A:
 
     python scripts/m4c_hardware_benchmark.py --com COM4 --profile A --repeat 1 --require-all --csv build/hardware/m4c_smoke.csv
     python scripts/m4c_hardware_benchmark.py --com COM4 --profile all --repeat 3 --csv build/hardware/m4c_final_3x3.csv
 
-See [reproduction](REPRODUCIBILITY_V1.md), [benchmark protocol](M4C_BENCHMARK_PROTOCOL.md), and [verification](VERIFICATION_AND_PERFORMANCE_V1.md).
-
-**Measurement limits:** ~12.85 µs measured *two-board low-load RTT*; 9,000/9,000 valid replies over nine finite test bursts at FPGA request-launch rates up to 100,000/s. These are not one-way core latency, continuously sustained packet rates, Ethernet wire timestamps, or production qualification claims.
+The recorded 12.85 microseconds value is **low-load two-board RTT**. The highest measured 100,000 request launches/s was a **finite-burst** result, not a continuous sustained or wire-timestamped Ethernet performance guarantee. See the verification, benchmark protocol and limitations documents.
