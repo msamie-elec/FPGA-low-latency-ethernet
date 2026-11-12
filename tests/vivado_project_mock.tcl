@@ -79,6 +79,15 @@ proc launch_runs {name args} {
     set props($name,STATUS) "write_bitstream Complete!"
 }
 proc wait_on_run {args} {}
+proc open_run {name} {}
+proc close_design {} {}
+proc get_ports {args} {
+    # Simulate get_ports -quiet <port>; fail if the requested name is unknown.
+    set wanted [lindex $args end]
+    set valid {eth_rx_dv eth_rxerr {eth_rxd[0]} {eth_rxd[1]} {eth_rxd[2]} {eth_rxd[3]} eth_tx_en {eth_txd[0]} {eth_txd[1]} {eth_txd[2]} {eth_txd[3]}}
+    if {[lsearch -exact $valid $wanted] < 0} {return {}}
+    return [list $wanted]
+}
 proc version {args} {return "MOCK NOT VIVADO"}
 proc assert_eq {a b note} {
     if {$a ne $b} {error "$note: got='$a' expected='$b'"}
