@@ -1,0 +1,26 @@
+# Generated simulation and Vivado build artifacts
+build/
+.Xil/
+*.runs/
+*.cache/
+*.sim/
+*.hw/
+*.ip_user_files/
+*.jou
+*.log
+*.bit
+*.bin
+*.ltx
+*.vcd
+*.vvp
+*.wdb
+*.o
+
+# Local Python / editor state
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,2 @@
+captured_utc,profile,repeat_index,requested_period_cycles,requested_period_us,sent,unique_replies,duplicate_replies,unexpected_replies,invalid_replies,late_launches,min_gap_cycles,max_gap_cycles,send_span_cycles,missing,delivery_percent,observed_request_rate_pps,min_gap_us,max_gap_us,send_span_us,passed_loss_free
+2026-11-11T18:19:07.642547+00:00,A,1,10000,100.0,1000,1000,0,0,0,0,10000,10000,9990000,0,100.0,10000.0,100.0,100.0,99900.0,True

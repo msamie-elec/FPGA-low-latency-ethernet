@@ -1,0 +1,21 @@
+name: FPGA pipeline regression
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install simulator and test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog g++
+          python -m pip install pytest
+      - name: Reference-model tests
+        run: python -m pytest -q tests/
+      - name: Generate reproducible vectors
+        run: python scripts/generate_vectors.py
+      - name: Verify RTL testbenches
+        run: bash scripts/run_rtl.sh

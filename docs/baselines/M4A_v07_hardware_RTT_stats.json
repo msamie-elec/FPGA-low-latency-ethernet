@@ -1,0 +1,44 @@
+{
+  "comparison": "Paired 200 hardware RTT records with expected and received responses identical",
+  "all_passed_v06": true,
+  "all_passed_v07": true,
+  "records": 200,
+  "v07_median_us": 12.75,
+  "v07_range_us": [
+    12.71,
+    12.78
+  ],
+  "per_command": [
+    {
+      "command": "S",
+      "count": 172,
+      "v06_mean_us": 1228.368,
+      "v07_mean_us": 12.746,
+      "reduction_percent": 98.96,
+      "v07_p95_us": 12.77,
+      "v07_min_us": 12.71,
+      "v07_max_us": 12.78
+    },
+    {
+      "command": "I",
+      "count": 17,
+      "v06_mean_us": 99.58,
+      "v07_mean_us": 12.745,
+      "reduction_percent": 87.2,
+      "v07_p95_us": 12.76,
+      "v07_min_us": 12.72,
+      "v07_max_us": 12.76
+    },
+    {
+      "command": "E",
+      "count": 11,
+      "v06_mean_us": 99.566,
+      "v07_mean_us": 12.743,
+      "reduction_percent": 87.2,
+      "v07_p95_us": 12.76,
+      "v07_min_us": 12.72,
+      "v07_max_us": 12.76
+    }
+  ],
+  "measurement_limit": "Board A hardware RTT includes PHY frame transfers and CDC. Not one-way or sustained throughput."
+}

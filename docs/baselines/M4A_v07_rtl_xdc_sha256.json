@@ -1,0 +1,29 @@
+{
+  "baseline": "M3 v0.7 hardware-verified, unchanged in M4A",
+  "files": {
+    "boards/arty_a7/demo.xdc": "ff59a65e5dbaa64acaf31d8c33b9fb52238c71c18724bad668a25a0f5b7a6b21",
+    "boards/arty_a7/ethernet_m2a.xdc": "34cfeb57ed17f9696eedacddb269e02db98d286d4a2bea862bd10f892ce8056b",
+    "boards/arty_a7/ethernet_m2b.xdc": "f616fa6f7485352edd2f9aab73190c8aa418ac15ebb813ba6e8ea8f73e96e5da",
+    "boards/arty_a7/ethernet_m2c_endpoint.xdc": "f616fa6f7485352edd2f9aab73190c8aa418ac15ebb813ba6e8ea8f73e96e5da",
+    "boards/arty_a7/ethernet_m2c_generator.xdc": "58ab735926cdb756cf9424995e41ccbcff65d75f32d4089c6700e281755920f6",
+    "boards/arty_a7/ethernet_m3_endpoint.xdc": "f616fa6f7485352edd2f9aab73190c8aa418ac15ebb813ba6e8ea8f73e96e5da",
+    "boards/arty_a7/uart.xdc": "ad19c7c8f73f3050d96154cc55a3b82563de2280f154ded0af1bcb533874ef61",
+    "boards/arty_s7/demo.xdc": "e1f84b68510517ab16ee5716d1d39c95ecb8e601c1310326b2b5532079d56327",
+    "boards/arty_s7/uart.xdc": "18ba3a90c51297ca02feb7b645c6a6847b0158682db315254ef1cf53b4824e28",
+    "rtl/board_demo.sv": "675aeb612d064adcbb290fb70a6d05d3590b8befd4dfd858ac3e673b0b70a00e",
+    "rtl/board_uart_demo.sv": "86ec1d21834f1104b6220a1d99044f17342324d3707b54d2c6816b2af6fa3e28",
+    "rtl/ethernet_generator_a7_m2c.sv": "d6969bd5b23c110705737b154c20f98073c6b32fb0ecd0c43920e1c0d43f12fa",
+    "rtl/ethernet_uart_a7.sv": "273d7a0723a7c172005224aa7ec1b2d291305ba747fe9dc4a610e16e298930d9",
+    "rtl/ethernet_udp_a7.sv": "578e53275f7a15a55f27ee61f91ea2721ee92728f3abf4811f69e93edd4264cd",
+    "rtl/ethernet_udp_a7_lowlat.sv": "9ca8b1a62bae83faea5b8b6b946424edaffb03d03a5bd252af405574f6203d28",
+    "rtl/feed_parser.sv": "dd2f8641c662cccf06b6db15c7a59b19d1ae40090aea53228bd03b7afa498a47",
+    "rtl/feed_pipeline.sv": "9a48ab1343996067f24be0f20b58abd3e3134978c7dbe8f0f32b8146c8c28257",
+    "rtl/mii_feed_tx.sv": "832d3216e15eebb435d9a7c764c41b270de36e4a7b1aebd36addab3d5875a0de",
+    "rtl/mii_reply_rx.sv": "98071362a3f2fb4169534c6651c0c57a53e6e1d3b9f935f86a20d4216b03dc24",
+    "rtl/mii_udp_rx.sv": "b066149a28a0e4d7023945071913a12328466dae4e5ce964acecf761e36a08f2",
+    "rtl/mii_udp_tx.sv": "b5d82542a18ac6e843ab660ee74ef8e906a502449cce27052995e2f81f13d165",
+    "rtl/top_of_book.sv": "0eabf8246f9519b73530756a0127329de61507529836a052342709f41b668c58",
+    "rtl/uart_rx.sv": "7847a671f983e4458890bfc9e59a5da8268c98e099e9432ad41fdbbffa9ebfd8",
+    "rtl/uart_tx.sv": "a69479dac3eb118757f07147e85f92e7594ddf78eec7ddb98d5e328735bb4593"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "release": "v1.0 portfolio source and evidence bundle",
+  "evidence_date": "2026-11-11",
+  "hardware": "2 x Digilent Arty A7-35T; direct 100 Mbps MII Ethernet",
+  "board_a": "v0.9 M4C hardware burst generator",
+  "board_b": "v0.8B buffered UDP endpoint",
+  "runs": 9,
+  "additional_smoke_runs": 1,
+  "packets": 9000,
+  "unique_responses": 9000,
+  "missing": 0,
+  "duplicates": 0,
+  "invalid": 0,
+  "late_launches": 0,
+  "highest_tested_loss_free_request_rate_pps": 100000,
+  "claim_limit": "FPGA request-launch interval, not independently probed Ethernet wire timestamp or indefinite sustained throughput.",
+  "by_profile": {
+    "A": {
+      "period_us": 100.0,
+      "runs": 3,
+      "sent": 3000,
+      "valid_unique": 3000,
+      "missing": 0,
+      "rate_pps": 10000
+    },
+    "B": {
+      "period_us": 20.0,
+      "runs": 3,
+      "sent": 3000,
+      "valid_unique": 3000,
+      "missing": 0,
+      "rate_pps": 50000
+    },
+    "C": {
+      "period_us": 10.0,
+      "runs": 3,
+      "sent": 3000,
+      "valid_unique": 3000,
+      "missing": 0,
+      "rate_pps": 100000
+    }
+  },
+  "vivado_routed_report_summary": {
+    "m4c_generator": {
+      "worst_setup_slack_ns": 0.576,
+      "worst_hold_slack_ns": 0.052,
+      "luts": 2485,
+      "flip_flops": 2247,
+      "critical_cdc1_mentions": 0
+    },
+    "m4b_endpoint": {
+      "worst_setup_slack_ns": 0.737,
+      "worst_hold_slack_ns": 0.046,
+      "luts": 2175,
+      "flip_flops": 6119,
+      "critical_cdc1_mentions": 0
+    }
+  },
+  "historical_latency": {
+    "v06_valid_report_mean_rtt_us": 1228.368,
+    "v07_valid_report_mean_rtt_us": 12.746,
+    "v07_median_rtt_us": 12.75,
+    "v08b_median_rtt_us": 12.85,
+    "caution": "v0.6 vs v0.7 compares UART-gated and parallel Ethernet reply architectures; RTT includes two PHY frame transmissions and CDC."
+  }
+}
