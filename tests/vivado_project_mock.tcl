@@ -114,8 +114,9 @@ foreach {source_name target_name} {
         if {$line eq $rx_guard || $line eq $tx_guard} {incr removed; continue}
         lappend expected $line
     }
-    if {$removed != 2 || [join $expected "\n"] ne $generated} {
-        error "GUI XDC changed something beyond the two unsupported checks: $source_name"
+    set expected_gui "[join $expected "\n"]\n# Arty A7 configuration bank 0 (Digilent schematic)\nset_property CFGBVS VCCO \[current_design\]\nset_property CONFIG_VOLTAGE 3.3 \[current_design\]\n"
+    if {$removed != 2 || $expected_gui ne $generated} {
+        error "GUI XDC differs from frozen XDC beyond two omitted guards and approved configuration-voltage properties: $source_name"
     }
 }
 set marker [file join $root build v project_ok.txt]
