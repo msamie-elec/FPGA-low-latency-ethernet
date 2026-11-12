@@ -30,14 +30,20 @@ def test_board_switch_and_output_preservation_using_tcl_mock():
     assert run.returncode == 0, run.stdout + "\n" + run.stderr
     assert "PASS: TCL MOCK ONLY" in run.stdout
 
-def test_mii_xdc_uses_supported_commands_and_preserves_port_timing():
+def test_original_xdc_frozen_and_gui_copy_uses_supported_syntax():
+    # Exact original hardware-verified XDC hashes are tested in test_m4c_benchmark.
+    # GUI-specific XDC copies are generated, dropping only the unsupported guards.
     for name in ("ethernet_m4c_generator.xdc", "ethernet_m4b_endpoint.xdc"):
         xdc = (ROOT / "boards" / "arty_a7" / name).read_text(encoding="utf-8")
-        assert not any(line.lstrip().startswith("if ") for line in xdc.splitlines())
+        assert 'if {[llength $mii_rx_ports] != 6}' in xdc
+        assert 'if {[llength $mii_tx_ports] != 5}' in xdc
         assert "set_input_delay -clock" in xdc
         assert "set_output_delay -clock" in xdc
         assert "create_generated_clock" in xdc
         assert "set_property IOB TRUE $mii_tx_ports" in xdc
+    gui_tcl = (ROOT / "vivado/create_project.tcl").read_text(encoding="utf-8")
+    assert "fpga_make_gui_xdc $board_a_xdc $gui_a_xdc" in gui_tcl
+    assert "fpga_make_gui_xdc $board_b_xdc $gui_b_xdc" in gui_tcl
     assert (ROOT / "vivado/check_mii_ports.tcl").is_file()
     build = (ROOT / "vivado/build_targets.tcl").read_text(encoding="utf-8")
     assert "source [file join $root vivado check_mii_ports.tcl]" in build
