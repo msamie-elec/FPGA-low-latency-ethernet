@@ -54,7 +54,6 @@ proc add_files {args} {
     }
 }
 proc update_compile_order {args} {}
-proc save_project {} {}
 proc close_project {} {}
 proc open_project {path} {
     if {![file isfile $path]} {error "XPR missing: $path"}
@@ -87,6 +86,8 @@ proc assert_eq {a b note} {
 set argv {}
 set argc 0
 source [file join $root vivado create_project.tcl]
+set marker [file join $root build v project_ok.txt]
+if {![file isfile $marker]} {error "Generator did not create success marker after XPR reopen verification"}
 assert_eq [get_property TOP sources_1] ethernet_generator_a7_m4c "Board A initial top"
 assert_eq [get_property CONSTRSET synth_1] constrs_board_a "Board A synthesis XDC"
 assert_eq [get_property CONSTRSET impl_1] constrs_board_a "Board A implementation XDC"
