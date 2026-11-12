@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Source from Vivado GUI Tcl Console in an OPEN FPGA_Low_Latency_Ethernet project:
+# Source from Vivado GUI Tcl Console in an OPEN EthAB project:
 #   cd <repository-root>
 #   source vivado/board_config.tcl
 #   fpga_select_board A
@@ -14,7 +14,7 @@ proc fpga_board_data {target} {
     }
 }
 proc fpga_root_dir {} {
-    # GUI project is under <repo>/build/vivado_gui/FPGA_Low_Latency_Ethernet
+    # GUI project is under <repo>/build/v/EthAB
     set project_path [file normalize [get_property DIRECTORY [current_project]]]
     return [file normalize [file join $project_path .. .. ..]]
 }
@@ -38,7 +38,7 @@ proc fpga_archive_current {} {
     if {![file isfile $source_bit]} {
         error "Bitstream not found: $source_bit; run Generate Bitstream first"
     }
-    set archive [file join [fpga_root_dir] build vivado_outputs board_$board]
+    set archive [file join [fpga_root_dir] build out $board]
     file mkdir $archive
     set dest [file join $archive board_$board.bit]
     file copy -force $source_bit $dest
