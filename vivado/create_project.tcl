@@ -2,8 +2,8 @@
 # ONE editable Vivado GUI project containing both Arty A7-35T designs.
 # vivado -mode batch -source vivado/create_project.tcl
 set root [file normalize [file join [file dirname [info script]] ..]]
-set project_name FPGA_Low_Latency_Ethernet
-set project_dir [file join $root build vivado_gui $project_name]
+set project_name EthAB
+set project_dir [file join $root build v $project_name]
 set part xc7a35ticsg324-1L
 
 # Only the FINAL frozen M4C generator + M4B buffered endpoint and their dependencies.
