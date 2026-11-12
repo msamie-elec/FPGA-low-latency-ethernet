@@ -81,7 +81,6 @@ proc fpga_select_board {target} {
     set_property CONSTRSET $constrset [get_runs synth_1]
     set_property CONSTRSET $constrset [get_runs impl_1]
     update_compile_order -fileset sources_1
-    save_project
     puts "ACTIVE: Board $board | synthesis top=$top | constraints=$constrset"
     puts "Simulation top remains tb_m4c_board_pair (both FPGAs)."
     return $board
