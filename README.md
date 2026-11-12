@@ -28,15 +28,15 @@ In Vivado choose **File → Project → Open**, then expand **Design Sources**. 
 
 ## System overview — TWO connected FPGA boards
 
-    Laptop / Host PC
-      | USB UART/JTAG (control, results)       | USB JTAG/UART (debug)
-      v                                        v
-    BOARD A: Arty A7-35T  <=== direct RJ45 ===> BOARD B: Arty A7-35T
-      M4C v0.9 generator        100 Mb/s         M4B v0.8B endpoint
-      MII UDP TX / reply RX     Ethernet         MII UDP RX / reply TX
-      Timed burst controller                    Dual-clock FIFO buffering
-      Reply sequence scoreboard                 100 MHz market-data pipeline
-
+```mermaid
+flowchart LR
+  PC["Laptop / host<br/>Vivado programming, UART results"]
+  A["BOARD A · Arty A7-35T<br/>M4C v0.9 traffic generator<br/>UDP request TX / response RX<br/>100 MHz scheduler and scoreboard"]
+  B["BOARD B · Arty A7-35T<br/>M4B v0.8B buffered endpoint<br/>UDP RX / 16-entry RX FIFO<br/>Feed parser + top-of-book<br/>16-entry TX FIFO / UDP reply TX"]
+  PC <-->|"USB/JTAG/UART<br/>Control and telemetry"| A
+  PC -.->|"USB/JTAG/UART<br/>Debug/programming"| B
+  A <-->|"Direct 100 Mb/s<br/>Ethernet RJ45 cable"| B
+```
 **Board B critical path:** 25 MHz Ethernet MII/FCS/IPv4/UDP validation → 16-entry asynchronous RX FIFO → 100 MHz feed parser and single-symbol top-of-book → 16-entry asynchronous TX FIFO → MII/UDP Ethernet reply. A separate 8-entry UART diagnostic FIFO may drop debug messages under pressure **without delaying the Ethernet reply**.
 
 **Board A** creates 1,000-packet benchmark bursts in FPGA hardware and checks unique replies; the laptop sends one UART profile command and collects the 40-byte telemetry report. See [architecture](docs/ARCHITECTURE_V1.md).
