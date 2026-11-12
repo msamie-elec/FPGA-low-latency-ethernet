@@ -21,7 +21,7 @@ set "RESULT=%ERRORLEVEL%"
 if "%RESULT%"=="0" (
   echo.
   echo Open this ONE Vivado GUI project:
-  echo build\vivado_gui\FPGA_Low_Latency_Ethernet\FPGA_Low_Latency_Ethernet.xpr
+  echo build\v\EthAB\EthAB.xpr
 )
 popd
 pause
