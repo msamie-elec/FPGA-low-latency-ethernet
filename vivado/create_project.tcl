@@ -41,6 +41,13 @@ proc fpga_make_gui_xdc {original generated} {
     file mkdir [file dirname $generated]
     set fd [open $generated w]
     puts -nonewline $fd [join $kept "\n"]
+    # Arty A7 Rev E: Digilent schematic sheets 6-7 show CFGBVS_0
+    # tied high to VCC3V3 and configuration Bank 0 VCCO_0 at 3.3V.
+    # Keep historically frozen XDC untouched. These properties only
+    # describe the real board's configuration bank for Vivado DRC.
+    puts $fd "\n# Arty A7 configuration bank 0 (Digilent schematic)"
+    puts $fd "set_property CFGBVS VCCO \[current_design\]"
+    puts $fd "set_property CONFIG_VOLTAGE 3.3 \[current_design\]"
     close $fd
 }
 set xdc_dir [file join $root build v xdc]
