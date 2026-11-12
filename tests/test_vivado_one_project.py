@@ -44,6 +44,9 @@ def test_original_xdc_frozen_and_gui_copy_uses_supported_syntax():
     gui_tcl = (ROOT / "vivado/create_project.tcl").read_text(encoding="utf-8")
     assert "fpga_make_gui_xdc $board_a_xdc $gui_a_xdc" in gui_tcl
     assert "fpga_make_gui_xdc $board_b_xdc $gui_b_xdc" in gui_tcl
+    # On Arty A7 Rev E the configuration bank uses 3.3V and CFGBVS=VCCO.
+    assert 'set_property CFGBVS VCCO' in gui_tcl
+    assert 'set_property CONFIG_VOLTAGE 3.3' in gui_tcl
     assert (ROOT / "vivado/check_mii_ports.tcl").is_file()
     build = (ROOT / "vivado/build_targets.tcl").read_text(encoding="utf-8")
     assert "source [file join $root vivado check_mii_ports.tcl]" in build
