@@ -5,26 +5,40 @@
 
 **A reproducible, hardware-tested TWO-FPGA Ethernet/UDP laboratory demonstrator**, implemented in SystemVerilog on **two Digilent Arty A7-35T** boards connected through a direct **100 Mb/s Ethernet MII link**. Board A generates FPGA-paced packet bursts and verifies responses; Board B validates frames, processes synthetic market-data updates and returns Ethernet replies using separate asynchronous buffers.
 
-> **Two boards are needed for the physical system.** You can download the project, **open both Vivado hierarchies, inspect RTL and simulate without owning either board**. This version targets **Arty A7-35T**, not the historical Arty S7 UART demonstrations.
+> **Two boards are needed for the physical system.** You can download the project, **open one Vivado project, inspect both hierarchies and simulate without owning either board**. This version targets **Arty A7-35T**, not the historical Arty S7 UART demonstrations.
 >
 > **Engineering scope:** fixed synthetic 16-byte feed record and narrow IPv4/UDP envelope, not a production exchange feed, general-purpose TCP/IP stack, certified HFT trading system or formally qualified CDC/PHY implementation.
 
-## Quick start: open BOTH Vivado GUI projects
+## Quick start: ONE Vivado project, TWO FPGA designs
 
-On Windows, clone/download this repository and **double-click [vivado/create_gui_projects.cmd](vivado/create_gui_projects.cmd)**. Or run from a Vivado-enabled shell at the repository root:
+On Windows with Vivado 2025.2.1, **double-click [vivado/create_project.cmd](vivado/create_project.cmd)**, or run from a Vivado-enabled command prompt:
 
-    vivado -mode batch -source vivado/create_gui_projects.tcl -tclargs both
+    vivado -mode batch -source vivado/create_project.tcl
 
-This **generates real editable Vivado .xpr project files** (no bitstreams built):
+This generates **one editable .xpr file** to open in Vivado GUI:
 
-| Separate Vivado project | Generated file to open | RTL top |
+    build/vivado_gui/FPGA_Low_Latency_Ethernet/FPGA_Low_Latency_Ethernet.xpr
+
+Both designs appear in its source tree. Use the Vivado **Tcl Console** from the repository root to select the synthesis hierarchy **and its matching XDC constraints simultaneously**:
+
+    source vivado/board_config.tcl
+    fpga_select_board A     ;# M4C traffic generator, board A constraints
+    fpga_select_board B     ;# M4B buffered endpoint, board B constraints
+
+| FPGA configuration | Synthesis top | XDC set |
 |---|---|---|
-| **Board A — traffic generator / scoreboard** | build/vivado_gui/board_a_generator/board_a_generator.xpr | ethernet_generator_a7_m4c |
-| **Board B — buffered UDP endpoint** | build/vivado_gui/board_b_endpoint/board_b_endpoint.xpr | ethernet_udp_a7_buffered |
+| Board A — generator and scoreboard | ethernet_generator_a7_m4c | constrs_board_a |
+| Board B — buffered UDP processor | ethernet_udp_a7_buffered | constrs_board_b |
 
-In Vivado choose **File → Project → Open**, then expand **Design Sources**. Each project has its own valid Artix-7 part, top-level RTL and pin/clock constraints; the final two-board testbench is under **Simulation Sources**. Regenerating .xpr from checked-in Tcl avoids machine-specific paths and keeps generated project files out of Git.
+**Do not switch top alone without changing the constraint set.** The separate simulation top remains tb_m4c_board_pair, which instantiates both boards with a simulated MII connection. No physical boards are required to inspect RTL or run behavioral simulation.
 
-**Start with the complete [Vivado GUI quick start](docs/VIVADO_GUI_QUICKSTART.md)** for hierarchy, simulation, implementation and physical wiring. The new GUI packaging is convenient but still requires a first test on an installed Vivado system.
+The same Vivado project can synthesize, implement and generate **two independent bitstreams**, archived separately by the build driver:
+
+    vivado -mode batch -source vivado/build_targets.tcl -tclargs both
+
+Output locations: build/vivado_outputs/board_A/board_A.bit and build/vivado_outputs/board_B/board_B.bit. For interactive GUI building, run fpga_archive_current after each completed bitstream, then fpga_select_board to switch. Synthesis runs are reset on a top change, but archived results remain separate.
+
+**Read the [one-project Vivado GUI guide](docs/VIVADO_GUI_QUICKSTART.md)** for hierarchy, simulation, implementation, programming and validation limitations. These portability scripts are new and **have not yet been tested inside Vivado here**; they do not modify the historically hardware-verified RTL.
 
 ## System overview — TWO connected FPGA boards
 
@@ -81,7 +95,7 @@ Python reference model / regression:
 
 | Folder | What you will find |
 |---|---|
-| [vivado/](vivado/) | Portable two-project GUI generator and double-click Windows launcher |
+| [vivado/](vivado/) | Single-project GUI generator, Board A/B selector, dual-build driver and Windows launcher |
 | [rtl/](rtl/) | Board A, Board B, shared parsers and FIFOs; historical variants retained |
 | [tb/](tb/) | Full simulated two-board link, FIFO and burst testbenches |
 | [boards/arty_a7/](boards/arty_a7/) | FPGA physical pin and clock constraints |
