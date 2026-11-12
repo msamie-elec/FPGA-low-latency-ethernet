@@ -29,3 +29,16 @@ def test_board_switch_and_output_preservation_using_tcl_mock():
     )
     assert run.returncode == 0, run.stdout + "\n" + run.stderr
     assert "PASS: TCL MOCK ONLY" in run.stdout
+
+def test_mii_xdc_uses_supported_commands_and_preserves_port_timing():
+    for name in ("ethernet_m4c_generator.xdc", "ethernet_m4b_endpoint.xdc"):
+        xdc = (ROOT / "boards" / "arty_a7" / name).read_text(encoding="utf-8")
+        assert not any(line.lstrip().startswith("if ") for line in xdc.splitlines())
+        assert "set_input_delay -clock" in xdc
+        assert "set_output_delay -clock" in xdc
+        assert "create_generated_clock" in xdc
+        assert "set_property IOB TRUE $mii_tx_ports" in xdc
+    assert (ROOT / "vivado/check_mii_ports.tcl").is_file()
+    build = (ROOT / "vivado/build_targets.tcl").read_text(encoding="utf-8")
+    assert "source [file join $root vivado check_mii_ports.tcl]" in build
+
