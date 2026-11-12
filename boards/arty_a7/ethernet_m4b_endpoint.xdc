@@ -36,7 +36,7 @@ create_clock -name eth_tx_25mhz -period 40.000 [get_ports eth_tx_clk]
 # These bounds exclude PCB data/clock trace skew and other board uncertainty;
 # therefore they are a first analysis pass, NOT final board-level values.
 set mii_rx_ports [get_ports {eth_rx_dv eth_rxerr eth_rxd[0] eth_rxd[1] eth_rxd[2] eth_rxd[3]}]
-if {[llength $mii_rx_ports] != 6} {error "Expected exactly six MII receive ports"}
+# MII RX port count is checked in Vivado after synthesis; Tcl 'if' is unsupported in XDC.
 set_input_delay -clock [get_clocks eth_rx_25mhz] -min 10.000 $mii_rx_ports
 set_input_delay -clock [get_clocks eth_rx_25mhz] -max 30.000 $mii_rx_ports
 
@@ -52,7 +52,7 @@ create_generated_clock -name phy_ref_25mhz \
 # TXD/TX_EN setup >=10 ns, hold >=0 ns at the PHY. These values omit
 # PCB skew and IO/timing uncertainty, so require post-route validation.
 set mii_tx_ports [get_ports {eth_tx_en eth_txd[0] eth_txd[1] eth_txd[2] eth_txd[3]}]
-if {[llength $mii_tx_ports] != 5} {error "Expected five MII transmit ports"}
+# MII TX port count is checked in Vivado after synthesis; keep XDC declarative.
 set_output_delay -clock [get_clocks eth_tx_25mhz] -max 10.000 $mii_tx_ports
 set_output_delay -clock [get_clocks eth_tx_25mhz] -min 0.000 $mii_tx_ports
 # Place the falling-edge MII output registers in the Artix-7 I/O logic
