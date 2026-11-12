@@ -4,13 +4,15 @@
 
 ## Step 1: Generate and open ONE Vivado .xpr
 
+**Avoid Windows path-length errors:** Extract the repository to a short location such as `C:\FPGA\Net` rather than a deeply nested Projects folder. The generator creates the short `build/v/EthAB/EthAB.xpr` path.
+
 With Vivado 2025.2.1 installed, Windows users can double-click vivado/create_project.cmd. Alternatively, from a Vivado-enabled shell:
 
     vivado -mode batch -source vivado/create_project.tcl
 
 Open this single generated project in Vivado using File > Project > Open:
 
-    build/vivado_gui/FPGA_Low_Latency_Ethernet/FPGA_Low_Latency_Ethernet.xpr
+    build/v/EthAB/EthAB.xpr
 
 The XPR is generated under ignored build/ for portability. Creation alone runs no synthesis or implementation.
 
@@ -63,8 +65,8 @@ Recommended automated dual-target build (requires the generated XPR):
 
 This builds Board A, archives its output, changes the top/XDC, then builds and archives Board B:
 
-    build/vivado_outputs/board_A/board_A.bit
-    build/vivado_outputs/board_B/board_B.bit
+    build/out/A/board_A.bit
+    build/out/B/board_B.bit
 
 Alternatively, in the GUI select Board A with fpga_select_board A, use Run Synthesis > Run Implementation > Generate Bitstream, then enter:
 
