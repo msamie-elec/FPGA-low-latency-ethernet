@@ -17,6 +17,35 @@ set rtl_files {
 set tb_file [file join $root tb tb_m4c_board_pair.sv]
 set board_a_xdc [file join $root boards arty_a7 ethernet_m4c_generator.xdc]
 set board_b_xdc [file join $root boards arty_a7 ethernet_m4b_endpoint.xdc]
+# The original hardware-validated XDC files remain frozen/hashed.
+# Create GUI-only copies with the two unsupported 'if' guards removed.
+# These guards are checked in vivado/check_mii_ports.tcl after synthesis.
+proc fpga_make_gui_xdc {original generated} {
+    set fd [open $original r]
+    set contents [read $fd]
+    close $fd
+    set rx_guard {if {[llength $mii_rx_ports] != 6} {error "Expected exactly six MII receive ports"}}
+    set tx_guard {if {[llength $mii_tx_ports] != 5} {error "Expected five MII transmit ports"}}
+    set kept {}
+    set removed 0
+    foreach line [split $contents "\n"] {
+        if {$line eq $rx_guard || $line eq $tx_guard} {
+            incr removed
+            continue
+        }
+        lappend kept $line
+    }
+    if {$removed != 2} {
+        error "Expected exactly two unsupported Tcl checks in frozen XDC: $original"
+    }
+    file mkdir [file dirname $generated]
+    set fd [open $generated w]
+    puts -nonewline $fd [join $kept "\n"]
+    close $fd
+}
+set xdc_dir [file join $root build v xdc]
+set gui_a_xdc [file join $xdc_dir A.xdc]
+set gui_b_xdc [file join $xdc_dir B.xdc]
 foreach name $rtl_files {
     set path [file join $root rtl $name]
     if {![file isfile $path]} {error "Missing RTL source: $path"}
@@ -27,6 +56,8 @@ foreach path [list $tb_file $board_a_xdc $board_b_xdc] {
 set project_ready [file join $root build v project_ok.txt]
 file mkdir [file dirname $project_dir]
 file delete -force $project_ready
+fpga_make_gui_xdc $board_a_xdc $gui_a_xdc
+fpga_make_gui_xdc $board_b_xdc $gui_b_xdc
 create_project -force $project_name $project_dir -part $part
 set_property target_language Verilog [current_project]
 foreach name $rtl_files {
@@ -35,8 +66,8 @@ foreach name $rtl_files {
 # Two mutually exclusive XDC sets; NEVER apply both at the same time.
 create_fileset -constrset constrs_board_a
 create_fileset -constrset constrs_board_b
-add_files -norecurse -fileset constrs_board_a $board_a_xdc
-add_files -norecurse -fileset constrs_board_b $board_b_xdc
+add_files -norecurse -fileset constrs_board_a $gui_a_xdc
+add_files -norecurse -fileset constrs_board_b $gui_b_xdc
 # Both FPGA designs are instantiated by the simulation testbench only.
 set_property source_set sources_1 [get_filesets sim_1]
 add_files -norecurse -fileset sim_1 $tb_file
