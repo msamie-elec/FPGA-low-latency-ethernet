@@ -107,9 +107,9 @@ set argv {both}
 set argc 1
 source [file join $root vivado build_targets.tcl]
 foreach board {A B} {
-    set path [file join $root build vivado_outputs board_$board board_$board.bit]
+    set path [file join $root build out $board board_$board.bit]
     if {![file isfile $path]} {error "Missing archived board $board result"}
-    set manifest [file join $root build vivado_outputs board_$board build_identity.txt]
+    set manifest [file join $root build out $board build_identity.txt]
     if {![file isfile $manifest]} {error "Missing archive manifest for $board"}
 }
 puts "PASS: TCL MOCK ONLY — one XPR, safe board configuration, dual output archive"
