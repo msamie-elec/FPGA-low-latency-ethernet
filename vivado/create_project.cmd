@@ -1,8 +1,10 @@
 @echo off
 REM SPDX-License-Identifier: MIT
-REM Create ONE Vivado GUI .xpr containing BOTH independent FPGA designs.
+REM Build ONE Vivado .xpr with both FPGA tops; open it only after validation.
 setlocal
 pushd "%~dp0.." || exit /b 1
+set "XPR=%CD%\build\v\EthAB\EthAB.xpr"
+set "MARKER=%CD%\build\v\project_ok.txt"
 if defined VIVADO_BIN (
   set "VIVADO_EXE=%VIVADO_BIN%"
 ) else (
@@ -11,18 +13,39 @@ if defined VIVADO_BIN (
   if not defined VIVADO_EXE if exist "C:\AMDDesignTools\2025.2.1\Vivado\bin\vivado.bat" set "VIVADO_EXE=C:\AMDDesignTools\2025.2.1\Vivado\bin\vivado.bat"
 )
 if not defined VIVADO_EXE (
-  echo ERROR: Vivado not found. Use a Vivado command prompt or set VIVADO_BIN.
-  popd
-  pause
-  exit /b 1
+  echo ERROR: Vivado not found. Open a Vivado command prompt or set VIVADO_BIN.
+  goto :fail
 )
+REM Remove any prior success token so a failed run can never be reported as PASS.
+if exist "%MARKER%" del /q "%MARKER%"
+echo Creating and verifying the single Vivado project...
 call "%VIVADO_EXE%" -mode batch -source vivado/create_project.tcl
-set "RESULT=%ERRORLEVEL%"
-if "%RESULT%"=="0" (
-  echo.
-  echo Open this ONE Vivado GUI project:
-  echo build\v\EthAB\EthAB.xpr
+if errorlevel 1 (
+  echo ERROR: Vivado project generator reported a failure.
+  goto :fail
+)
+if not exist "%MARKER%" (
+  echo ERROR: Vivado did not finish XPR reopen verification; inspect messages above.
+  goto :fail
+)
+if not exist "%XPR%" (
+  echo ERROR: Project file does not exist: %XPR%
+  goto :fail
+)
+echo.
+echo SUCCESS: Vivado project created and validated:
+echo %XPR%
+echo Opening Vivado GUI with the project...
+start "" "%VIVADO_EXE%" -mode gui "%XPR%"
+if errorlevel 1 (
+  echo NOTE: Automatic GUI launch was unsuccessful. Double-click the XPR above.
 )
 popd
 pause
-exit /b %RESULT%
+exit /b 0
+
+:fail
+echo No valid project creation is claimed. Fix the ERROR above before continuing.
+popd
+pause
+exit /b 1
