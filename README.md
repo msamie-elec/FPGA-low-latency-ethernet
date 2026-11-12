@@ -17,7 +17,7 @@ On Windows with Vivado 2025.2.1, **double-click [vivado/create_project.cmd](viva
 
 This generates **one editable .xpr file** to open in Vivado GUI:
 
-    build/vivado_gui/FPGA_Low_Latency_Ethernet/FPGA_Low_Latency_Ethernet.xpr
+    build/v/EthAB/EthAB.xpr
 
 Both designs appear in its source tree. Use the Vivado **Tcl Console** from the repository root to select the synthesis hierarchy **and its matching XDC constraints simultaneously**:
 
@@ -36,7 +36,9 @@ The same Vivado project can synthesize, implement and generate **two independent
 
     vivado -mode batch -source vivado/build_targets.tcl -tclargs both
 
-Output locations: build/vivado_outputs/board_A/board_A.bit and build/vivado_outputs/board_B/board_B.bit. For interactive GUI building, run fpga_archive_current after each completed bitstream, then fpga_select_board to switch. Synthesis runs are reset on a top change, but archived results remain separate.
+Output locations: build/out/A/board_A.bit and build/out/B/board_B.bit. For interactive GUI building, run fpga_archive_current after each completed bitstream, then fpga_select_board to switch. Synthesis runs are reset on a top change, but archived results remain separate.
+
+**Windows note:** extract the GitHub ZIP to a short folder such as `C:\FPGA\Net` to avoid Windows path-length errors. Keep Vivado working folders short.
 
 **Read the [one-project Vivado GUI guide](docs/VIVADO_GUI_QUICKSTART.md)** for hierarchy, simulation, implementation, programming and validation limitations. These portability scripts are new and **have not yet been tested inside Vivado here**; they do not modify the historically hardware-verified RTL.
 
