@@ -19,3 +19,5 @@ jobs:
         run: python scripts/generate_vectors.py
       - name: Verify RTL testbenches
         run: bash scripts/run_rtl.sh
+      - name: Final M4B/M4C dual-FPGA RTL verification
+        run: python scripts/run_final_rtl.py
