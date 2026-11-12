@@ -8,7 +8,7 @@
 - **Final physical benchmark:** 9,000/9,000 correct unique replies over nine 1,000-request finite bursts at programmed and FPGA-measured launch rates of 10k, 50k and 100k requests/s. No missing, duplicate, invalid replies or late launches in these trials.
 - **Low-load median two-board RTT:** 12.85 microseconds for the v0.8B endpoint. **Not** core-only/one-way processing latency.
 - **Routed timing:** Both reported post-route designs have positive constrained setup/hold slack, **not** complete external PHY I/O qualification or formal CDC proof.
-- **Interactive Vivado projects:** Generate TWO .xpr projects using vivado/create_gui_projects.tcl, with design/source hierarchy and simulation setup, described in docs/VIVADO_GUI_QUICKSTART.md. This packaging addition does not change validated RTL and still requires a first local Vivado GUI test.
+- **Interactive Vivado projects:** Generate ONE editable .xpr project using vivado/create_project.tcl; use vivado/board_config.tcl to switch Board A/B top and XDC together, and vivado/build_targets.tcl for separately archived bitstreams. See docs/VIVADO_GUI_QUICKSTART.md. This packaging addition does not change validated RTL and still requires a first local Vivado GUI test.
 
 **Start with:** [README](README.md), [Vivado GUI setup](docs/VIVADO_GUI_QUICKSTART.md), [verification and performance](docs/VERIFICATION_AND_PERFORMANCE_V1.md), [reproduction](docs/REPRODUCIBILITY_V1.md), [limitations](docs/LIMITATIONS_V1.md).
 
