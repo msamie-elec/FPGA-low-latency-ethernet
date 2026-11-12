@@ -95,6 +95,29 @@ proc assert_eq {a b note} {
 set argv {}
 set argc 0
 source [file join $root vivado create_project.tcl]
+# Verify generated XDC copies differ from their frozen originals ONLY in
+# removing the two invalid conditional statements, without any timing edits.
+foreach {source_name target_name} {
+    ethernet_m4c_generator.xdc A.xdc
+    ethernet_m4b_endpoint.xdc B.xdc
+} {
+    set original_path [file join $root boards arty_a7 $source_name]
+    set generated_path [file join $root build v xdc $target_name]
+    if {![file isfile $generated_path]} {error "Missing generated XDC: $generated_path"}
+    set fh [open $original_path r]; set original [read $fh]; close $fh
+    set fh [open $generated_path r]; set generated [read $fh]; close $fh
+    set rx_guard {if {[llength $mii_rx_ports] != 6} {error "Expected exactly six MII receive ports"}}
+    set tx_guard {if {[llength $mii_tx_ports] != 5} {error "Expected five MII transmit ports"}}
+    set expected {}
+    set removed 0
+    foreach line [split $original "\n"] {
+        if {$line eq $rx_guard || $line eq $tx_guard} {incr removed; continue}
+        lappend expected $line
+    }
+    if {$removed != 2 || [join $expected "\n"] ne $generated} {
+        error "GUI XDC changed something beyond the two unsupported checks: $source_name"
+    }
+}
 set marker [file join $root build v project_ok.txt]
 if {![file isfile $marker]} {error "Generator did not create success marker after XPR reopen verification"}
 assert_eq [get_property TOP sources_1] ethernet_generator_a7_m4c "Board A initial top"
