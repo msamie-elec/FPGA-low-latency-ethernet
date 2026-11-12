@@ -16,6 +16,8 @@ Open this single generated project in Vivado using File > Project > Open:
 
 The XPR is generated under ignored build/ for portability. Creation alone runs no synthesis or implementation.
 
+**Windows launch and failure behaviour:** The corrected launcher verifies the project was generated **and reopened** successfully, then starts Vivado GUI with the generated XPR. If it prints an error, leave the project unbuilt and inspect the console; a partial XPR is not a valid project. The earlier Tcl error `[Common 17-163] Missing value for option 'name'` was caused by a bare `save_project` call in the first packaging candidate. Vivado automatically saves project changes; the invalid command has been removed from both the project generator and board selector. If you downloaded a ZIP before that correction, obtain the updated branch or remove the lone `save_project` lines from both Tcl files.
+
 ## Step 2: Switch the design hierarchy AND constraints together
 
 In Vivado Tcl Console, change directory to the repository root and run:
