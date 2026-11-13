@@ -62,6 +62,13 @@ Look for the PASS tb_m4c_board_pair completion message. PHY analog/electrical ti
 
 This requires iverilog and vvp. GitHub Actions covers this Icarus regression but not Vivado implementation.
 
+
+### Switching synthesis tops: incremental reuse and expected FIFO warnings
+
+Vivado's default *Automatically selected checkpoint* incremental-synthesis option can try to reuse the earlier Board A `.dcp` when Board B is selected. Since these are **different designs**, choose **Settings > Synthesis > Incremental Synthesis > Disable incremental compile** before re-running `synth_1` on the other top. The `[Synth 8-6895]` unsuited-checkpoint message means Vivado falls back to standard synthesis, not that Board B RTL is invalid. Do not reuse Board A's synthesis checkpoint as Board B's reference.
+
+Board B's historical `m4b_async_fifo.sv` uses a small distributed-style dual-clock FIFO. Vivado may report `[Synth 8-7137]` (memory inferred with set/reset handling; possible simulation mismatch) and `[Synth 8-4767]` (FIFO memory implemented in registers, not BRAM). **Do not change the hardware-verified FIFO simply to suppress warnings.** These are an acknowledged resource limitation and a warning to retain regression checks; examine the actual mapped implementation and CDC/report results. See [limitations](LIMITATIONS_V1.md).
+
 ## Step 4: Generate TWO independent bitstreams from ONE project
 
 Recommended automated dual-target build (requires the generated XPR):
