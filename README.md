@@ -101,6 +101,20 @@ Python reference model / regression:
 
 **Review actual routed timing/CDC/PHY reports before programming any regenerated bitstream.** A success result from project generation or a positive Vivado slack number is not full hardware signoff. Read [reproduction](docs/REPRODUCIBILITY_V1.md), [benchmark protocol](docs/M4C_BENCHMARK_PROTOCOL.md) and [limitations](docs/LIMITATIONS_V1.md).
 
+## Readable A → B → A simulation waveform
+
+The two-board testbench now has **passive, simulation-only MII byte monitors** that decode frame/payload bytes and expose Board B frame acceptance, reply enqueue, Board A reply scoreboard progress and the three-profile PASS status. They do **not** change the synthesizable FPGA RTL or validate analogue PHY timing.
+
+With behavioral simulation open, create a tidy five-group waveform and save a reusable Vivado `.wcfg`:
+
+```tcl
+source sim/waves/setup_demo.tcl
+restart
+run all
+```
+
+Run the commands from the extracted repository root in the **Vivado Tcl Console**. The script produces `sim/waves/dual_board_demo.wcfg` locally. See [step-by-step waveform guide](docs/WAVEFORM_DEMO.md) for zooming to one request/reply and preparing an **actual Vivado screenshot** for GitHub; neither a screenshot nor a GUI-validated .wcfg has been claimed yet.
+
 ## Clean GitHub source ZIP
 
 GitHub **Code → Download ZIP** is intentionally curated using `.gitattributes` / `export-ignore`. It contains only the final HDL, the two active XDCs, the one-XPR generator/selector, simulation and reference-model tests, a host benchmark tool, selected evidence and the essential engineering documentation. It contains **no legacy M2/M3 candidate designs, older XDCs, obsolete build scripts, draft portfolio files, or pregenerated test vectors**. Generators recreate any test data they need. A Git clone still retains all engineering history and additional research files. This behaviour applies to the branch/tag you actually download; `main` will have the curated ZIP **after this PR is merged**.
