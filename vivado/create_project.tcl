@@ -101,6 +101,11 @@ if {[get_property CONSTRSET [get_runs synth_1]] ne "constrs_board_a"} {
 if {[get_property CONSTRSET [get_runs impl_1]] ne "constrs_board_a"} {
     error "Wrong persisted implementation constraints in $final_xpr"
 }
+# Confirm BOTH persisted constraint sets contain an actual effective XDC.
+# A selected but empty set can otherwise route an entirely unconstrained FPGA.
+source [file join $root vivado board_config.tcl]
+fpga_ensure_board_xdc A constrs_board_a
+fpga_ensure_board_xdc B constrs_board_b
 close_project
 set fh [open $project_ready w]
 puts $fh "Project creation and reopen verification passed: $final_xpr"
