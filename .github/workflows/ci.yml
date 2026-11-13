@@ -21,3 +21,16 @@ jobs:
         run: bash scripts/run_rtl.sh
       - name: Final M4B/M4C dual-FPGA RTL verification
         run: python scripts/run_final_rtl.py
+      - name: Verify clean GitHub Download ZIP builds independently
+        run: |
+          mkdir -p build/download_check
+          git archive --format=tar HEAD | tar -xf - -C build/download_check
+          test -f build/download_check/vivado/create_project.tcl
+          test -f build/download_check/boards/arty_a7/ethernet_m4c_generator.xdc
+          test -f build/download_check/boards/arty_a7/ethernet_m4b_endpoint.xdc
+          test ! -e build/download_check/rtl/ethernet_generator_a7_m2c.sv
+          test ! -e build/download_check/boards/arty_a7/ethernet_m2c_generator.xdc
+          test ! -e build/download_check/scripts/build_m3_endpoint.tcl
+          test ! -e build/download_check/tests/generated/m2c_a_standard.hex
+          (cd build/download_check && python -m pytest -q tests && python scripts/run_final_rtl.py)
+
