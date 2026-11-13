@@ -41,19 +41,23 @@ module tb_m4c_board_pair;
     // Payload begins after 8 preamble/SFD + 42 MAC/IP/UDP bytes = byte 50.
     // ---------------------------------------------------------------------
     wire [7:0] a2b_byte, a2b_payload_byte, b2a_byte, b2a_payload_byte;
+    wire [31:0] a2b_sequence, b2a_sequence;
     wire a2b_byte_valid, a2b_payload_valid, b2a_byte_valid, b2a_payload_valid;
+    wire a2b_sequence_valid, b2a_sequence_valid;
     wire [7:0] a2b_byte_index, b2a_byte_index;
     wire [15:0] a2b_frames, b2a_frames;
-    mii_demo_byte_monitor #(.PAYLOAD_BYTES(16)) a2b_monitor (
+    mii_demo_byte_monitor #(.PAYLOAD_BYTES(16),.SEQ_OFFSET(2)) a2b_monitor (
         .clk(miiclk),.reset(btn),.dv(atxen),.nibble(atxd),
         .frame_byte(a2b_byte),.frame_byte_valid(a2b_byte_valid),
         .payload_byte(a2b_payload_byte),.payload_byte_valid(a2b_payload_valid),
+        .sequence(a2b_sequence),.sequence_valid(a2b_sequence_valid),
         .byte_index(a2b_byte_index),.frame_count(a2b_frames)
     );
-    mii_demo_byte_monitor #(.PAYLOAD_BYTES(14)) b2a_monitor (
+    mii_demo_byte_monitor #(.PAYLOAD_BYTES(14),.SEQ_OFFSET(1)) b2a_monitor (
         .clk(miiclk),.reset(btn),.dv(btxen),.nibble(btxd),
         .frame_byte(b2a_byte),.frame_byte_valid(b2a_byte_valid),
         .payload_byte(b2a_payload_byte),.payload_byte_valid(b2a_payload_valid),
+        .sequence(b2a_sequence),.sequence_valid(b2a_sequence_valid),
         .byte_index(b2a_byte_index),.frame_count(b2a_frames)
     );
 
@@ -62,6 +66,7 @@ module tb_m4c_board_pair;
     wire b_reply_enqueued = board_b.send_pending && board_b.tx_wr_ready;
     wire a_reply_staged = board_a.reply_staged;      // received at A scoreboard
     wire [31:0] a_unique_replies = board_a.unique_count;
+    wire [31:0] a_staged_reply_seq = board_a.staged_reply[103:72];
     wire [7:0] active_profile = board_a.profile;
     logic profile_pass = 0;                          // after profile assertions
     integer profiles_passed = 0;
@@ -163,7 +168,8 @@ endmodule
 // A displayed payload byte is valid ONLY when payload_byte_valid is asserted.
 // Keep this monitor passive: it samples MII but does not drive any FPGA input.
 module mii_demo_byte_monitor #(
-    parameter integer PAYLOAD_BYTES = 16
+    parameter integer PAYLOAD_BYTES = 16,
+    parameter integer SEQ_OFFSET = 2
 )(
     input wire clk, reset, dv,
     input wire [3:0] nibble,
@@ -171,20 +177,25 @@ module mii_demo_byte_monitor #(
     output logic frame_byte_valid = 0,
     output logic [7:0] payload_byte = 0,
     output logic payload_byte_valid = 0,
+    output logic [31:0] sequence = 0,
+    output logic sequence_valid = 0,
     output logic [7:0] byte_index = 0,
     output logic [15:0] frame_count = 0
 );
     logic half_byte = 0, prev_dv = 0;
     logic [3:0] lo = 0;
+    logic [31:0] sequence_shift = 0;
     always @(posedge clk) begin
         if (reset) begin
             frame_byte <= 0; frame_byte_valid <= 0;
             payload_byte <= 0; payload_byte_valid <= 0;
+            sequence <= 0; sequence_valid <= 0; sequence_shift <= 0;
             byte_index <= 0; frame_count <= 0;
             half_byte <= 0; prev_dv <= 0; lo <= 0;
         end else begin
             frame_byte_valid <= 0;
             payload_byte_valid <= 0;
+            sequence_valid <= 0;
             prev_dv <= dv;
             if (dv) begin
                 if (!prev_dv) frame_count <= frame_count + 1'b1;
@@ -198,6 +209,16 @@ module mii_demo_byte_monitor #(
                         byte_index < (8'd50 + PAYLOAD_BYTES)) begin
                         payload_byte <= {nibble,lo};
                         payload_byte_valid <= 1;
+                    end
+                    // Expose the 32-bit network-order request/reply sequence.
+                    // A request has two leading payload bytes; B reply has one.
+                    if (byte_index >= (8'd50 + SEQ_OFFSET) &&
+                        byte_index < (8'd54 + SEQ_OFFSET)) begin
+                        sequence_shift <= {sequence_shift[23:0],nibble,lo};
+                        if (byte_index == (8'd53 + SEQ_OFFSET)) begin
+                            sequence <= {sequence_shift[23:0],nibble,lo};
+                            sequence_valid <= 1;
+                        end
                     end
                     byte_index <= byte_index + 1'b1;
                     half_byte <= 0;
