@@ -57,3 +57,31 @@ The implementations show positive overall constrained setup/hold slack and no cr
 - Full bitstreams and the exact physical JTAG serial mapping are not included in the public package; users must build and verify on their own FPGA hardware.
 
 **Conclusion:** M4C finite-burst verification succeeded at the fixed highest tested FPGA request rate of 100,000/s, and Project 1's agreed technical scope is complete. Remaining work is only repository/portfolio publishing and optional photos/screenshots, not further Ethernet RTL feature development.
+
+## Additional physical verification — user's fresh Windows `Low-latency-ethernet_v5` session, 13 November 2026
+
+**Evidence level:** operator-supplied Vivado/PowerShell screenshots and the printed terminal summaries, **not** a repository-attached copy of the new `build/hardware` raw files. This 13 Nov session is **distinct** from the historical 11 Nov source CSV/JSON benchmark above. Do not silently add its counts to the earlier 9,000/9,000 release matrix or claim independent reproduction by GitHub CI.
+
+The operator generated both role-specific bitstreams locally in Vivado 2025.2.1 using a single `EthAB.xpr`, verified their `build_identity.txt` top/XDC identities, programmed both Arty A7 boards, connected them directly by RJ45 and used Board A's USB UART for the physical benchmarks. Selected Vivado routed measurements for the same design tops are given above and in the [13 Nov acceptance record](VIVADO_2026-11-13_ACCEPTANCE.md); the recorded methodological PHY/CDC caveats remain open.
+
+| 13 Nov physical session, Board A v0.9 + B v0.8B | Observed console result | Interpretation |
+|---|---|---|
+| Profile A (`--repeat 1 --require-all`) | 1,000 sent, 1,000 unique, no missing/duplicates/invalid/late; 10,000 FPGA-request launches/s | Smoke test passed |
+| Profile B (`--repeat 10 --require-all`) | **10 of 10** runs: 1,000 sent / 1,000 unique each, zero missing/duplicates/invalid/late; 50,000 requests/s | 10,000 accepted requests/replies over finite bursts |
+| Profile C initial `--repeat 10` attempt | **First two runs 0 unique/1,000 missing each; next eight runs 1,000 unique each** | **Observed intermittent startup/run-state failure**, not a strict loss-free pass. The tool correctly reported `FAIL strict loss-free requirement` |
+| Profile C subsequent separate `--repeat 10 --require-all` run | **10 of 10** runs: 1,000 sent/unique each; zero missing/duplicates/invalid/late; 100,000 FPGA request launches/s | Successful finite-burst repeat; **does not erase the earlier failure** |
+| Controlled **BTN0 manual-reset** first-vs-warm test: `--mode reset --profile C --cycles 10 --warm-runs 1` | **10/10** first bursts and **10/10** warm bursts passed, 40/40 UART bytes each, 1,000 unique replies each, zero missing reported | 20,000 request/reply observations in manually controlled link-ready reset experiment |
+
+The reset tool's final console line was **`First-burst passes: 10/10`**. Per-cycle lines showed `first: PASS` and `warm: PASS` for cycles 1–10. The operator deliberately released BTN0 on **both** boards, verified link, then typed `READY` before each first burst. The raw session was written **locally** under:
+
+```text
+build/hardware/cold_start/cold_start_20261113T194925642880Z/
+    results.csv
+    summary.json
+```
+
+**This was *not* ten power removals/restorations.** The `READY` confirmation is not time-correlated to exact BTN0 release. The 100,000/s figure is from Board A's internal 100 MHz launch-spacing counters over finite ~10 ms bursts, **not PHY pin timestamping**, line-rate saturation, one-way processing latency or uninterrupted throughput. `unique=1000` and `missing=0` do not reveal the internal Board B FIFO overflow/debug-drop counters.
+
+**Data publication gap:** the local `v5` CSV/JSON raw records were visible in Windows Explorer but are **not yet committed** to the repository. Preserve the original *failed* Profile C test as well as the later passing tests. Before publishing a separate evidence bundle, inspect raw metadata/paths, sanitise if appropriate, preserve a source checksum and identify the bitstream version/board role; do not manufacture row-level CSV data from terminal screenshots. A future electrical power-cycle test and repeatability testing across unplug/replug remain **not performed** as of this documentation entry.
+
+For exact operator actions, see [hardware test operations](TEST_OPERATIONS_GUIDE.md), [cold-start protocol](M4C_COLD_START_RELIABILITY.md), and [limitations](LIMITATIONS_V1.md).
