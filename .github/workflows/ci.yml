@@ -28,6 +28,9 @@ jobs:
           test -f build/download_check/vivado/create_project.tcl
           test -f build/download_check/sim/waves/setup_demo.tcl
           test -f build/download_check/docs/WAVEFORM_DEMO.md
+          test -f build/download_check/docs/XDC_AND_IO_REFERENCE.md
+          test -f build/download_check/docs/TEST_OPERATIONS_GUIDE.md
+          test -f build/download_check/docs/FUTURE_IMPROVEMENTS.md
           test -f build/download_check/tests/test_wave_demo.py
           test -f build/download_check/boards/arty_a7/ethernet_m4c_generator.xdc
           test -f build/download_check/boards/arty_a7/ethernet_m4b_endpoint.xdc
