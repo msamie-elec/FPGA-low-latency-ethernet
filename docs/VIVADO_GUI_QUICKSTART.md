@@ -48,6 +48,16 @@ The helper switches BOTH the synthesis top and the matching XDC set. Do not manu
 
 Both synthesis top modules appear in Design Sources, but **only the selected module is synthesized as top**. The other is not instantiated by it.
 
+### Verify effective XDC files before synthesis or implementation
+
+The **constraint set name alone is not proof the XDC is applied**. The first Windows acceptance run found Board B could be selected with `constrs_board_b` yet have an empty constraint compile order, resulting in all 22 ports unassigned, unconstrained clocks and meaningless timing (`inf`). The corrected board selector now verifies/repairs the generated XDC association and **refuses to continue** if no effective synthesis/implementation constraints are found.
+
+In the Vivado Tcl Console, check:
+
+    report_compile_order -constraints
+
+Both synthesis and implementation sections must show the chosen Board A or Board B XDC. If either section is empty, **do not generate a bitstream**. In the earlier local v2 project, first attach your corrected `boards/arty_a7/ethernet_m4b_endpoint.xdc` to `constrs_board_b` and rerun both synthesis and implementation. Never downgrade NSTD-1, UCIO-1 or TIMING-17 to allow unconstrained programming.
+
 ## Step 3: Simulate BOTH FPGA designs together
 
 Simulation Sources has a separate top, tb_m4c_board_pair, that instantiates both FPGAs and connects them over an idealized MII link. This simulation top remains the same regardless of the selected synthesis board.
