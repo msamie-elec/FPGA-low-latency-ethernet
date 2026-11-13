@@ -19,7 +19,7 @@ This generates **one editable .xpr file** to open in Vivado GUI:
 
     build/v/EthAB/EthAB.xpr
 
-Both designs appear in the source tree. The **only two active physical constraint files** for the final design are `ethernet_m4c_generator.xdc` (A) and `ethernet_m4b_endpoint.xdc` (B). The generator creates compatible copies, `build/v/xdc/A.xdc` and `build/v/xdc/B.xdc`, and assigns one to each mutually exclusive Vivado constraint set. Other XDCs in the repository are **historical references only** and are not loaded into the final `EthAB.xpr`.
+Both designs appear in the source tree. The **only two active physical constraint files** for the final design are `ethernet_m4c_generator.xdc` (A) and `ethernet_m4b_endpoint.xdc` (B). The generator creates compatible copies, `build/v/xdc/A.xdc` and `build/v/xdc/B.xdc`, and assigns one to each mutually exclusive Vivado constraint set. Older XDCs remain visible in Git history and online browsing, but **are excluded from GitHub's Download ZIP** and are never loaded into the generated `EthAB.xpr`.
 
 Use the Vivado **Tcl Console** from the repository root to select the synthesis hierarchy **and its matching XDC constraints simultaneously**:
 
@@ -85,14 +85,14 @@ Python reference model / regression:
 
     python -m pytest -q tests
 
-**Final six RTL benches** (Icarus Verilog: iverilog and vvp required, no FPGA hardware):
+**Final seven RTL benches** (Icarus Verilog: iverilog and vvp required, no FPGA hardware):
 
     python scripts/run_final_rtl.py
 
-**Existing original Vivado batch flows** (build a *separate* bitstream per board and produce routed reports):
+**Recommended one-project Vivado batch flow** (run the GUI project generator first; builds and archives both independent images):
 
-    vivado -mode batch -source scripts/build_m4c_generator.tcl
-    vivado -mode batch -source scripts/build_m4b_endpoint.tcl
+    vivado -mode batch -source vivado/create_project.tcl
+    vivado -mode batch -source vivado/build_targets.tcl -tclargs both
 
 **Physical benchmark**: Program each FPGA with its matching top's bitstream, use a direct RJ45 cable between Arty A7 boards and independent USB power/JTAG/UART, then reset BTN0 on both. The historical COM4 (A) and COM3 (B) assignments may change on your PC.
 
@@ -101,23 +101,27 @@ Python reference model / regression:
 
 **Review actual routed timing/CDC/PHY reports before programming any regenerated bitstream.** A success result from project generation or a positive Vivado slack number is not full hardware signoff. Read [reproduction](docs/REPRODUCIBILITY_V1.md), [benchmark protocol](docs/M4C_BENCHMARK_PROTOCOL.md) and [limitations](docs/LIMITATIONS_V1.md).
 
+## Clean GitHub source ZIP
+
+GitHub **Code → Download ZIP** is intentionally curated using `.gitattributes` / `export-ignore`. It contains only the final HDL, the two active XDCs, the one-XPR generator/selector, simulation and reference-model tests, a host benchmark tool, selected evidence and the essential engineering documentation. It contains **no legacy M2/M3 candidate designs, older XDCs, obsolete build scripts, draft portfolio files, or pregenerated test vectors**. Generators recreate any test data they need. A Git clone still retains all engineering history and additional research files. This behaviour applies to the branch/tag you actually download; `main` will have the curated ZIP **after this PR is merged**.
+
 ## Navigate the repository
 
 | Folder | What you will find |
 |---|---|
 | [vivado/](vivado/) | Single-project GUI generator, Board A/B selector, dual-build driver and Windows launcher |
-| [rtl/](rtl/) | Board A, Board B, shared parsers and FIFOs; historical variants retained |
+| [rtl/](rtl/) | The 13 final synthesizable Board A/B and shared RTL modules (Download ZIP excludes prior versions) |
 | [tb/](tb/) | Full simulated two-board link, FIFO and burst testbenches |
-| [boards/arty_a7/](boards/arty_a7/) | Final Board A/B XDC plus archived older-stage pin/clock constraints (only 2 active in the generated GUI project) |
-| [scripts/](scripts/) | Vivado batch builds, CI RTL regressions, benchmarks, report audits |
+| [boards/arty_a7/](boards/arty_a7/) | Exactly two final Arty A7 physical XDC files in the downloaded ZIP |
+| [scripts/](scripts/) | Final Icarus simulation/vector generation and the hardware benchmark host utility |
 | [software/](software/) and [tests/](tests/) | Independent Python/C++ models and regression |
 | [evidence/](evidence/) | Primary hardware benchmark CSV/JSON and reviewed summary |
 | [docs/](docs/) | Architecture, verified measurements, reproduction, caveats |
-| [portfolio/](portfolio/) | Upwork and LinkedIn case studies and publication checklist |
+| [portfolio/](portfolio/) | Profile/case-study drafts remain on the GitHub site but are excluded from Download ZIP |
 
 **Active release files:** [13 Nov Vivado acceptance](docs/VIVADO_2026-11-13_ACCEPTANCE.md) · [GUI quick start](docs/VIVADO_GUI_QUICKSTART.md) · [Limitations](docs/LIMITATIONS_V1.md).
 
-**Additional material:** [Release notes](docs/RELEASE_NOTES_V1.md) · [Future improvements (not required for this release)](docs/FUTURE_IMPROVEMENTS.md) · [Upwork case study](portfolio/UPWORK_CASE_STUDY.md) · [LinkedIn summary](portfolio/LINKEDIN_PROJECT.md).
+**Additional material:** [Release notes](docs/RELEASE_NOTES_V1.md). Future research notes and LinkedIn/Upwork drafts are available when browsing/cloning the repository, but excluded from the minimal downloadable ZIP.
 
 **v1.0 is the source/evidence portfolio packaging, not a new hardware RTL release.** Board A = v0.9 M4C; Board B = v0.8B M4B. Older milestone candidate documents are historical and are not the current release status.
 
