@@ -1,49 +1,79 @@
-# Reproduction guide - two Arty A7-35T boards
+# Reproduce the final dual-Arty Ethernet FPGA demonstrator
 
-## Requirements
+## Scope
 
-- Two Digilent Arty A7-35T FPGAs (exact device/board revision must match constraints), RJ45 Cat5e/Cat6 patch lead, and two separate USB JTAG/UART connections.
-- AMD Vivado 2025.2.1, Icarus Verilog (`iverilog`, `vvp`), Python with `pytest` and `pyserial`.
-- Windows PowerShell examples below assume a checked-out project root; substitute your own path. Board A/Board B historical COM4/COM3 values are not guaranteed after replugging USB.
+This guide is for the **curated GitHub Download ZIP** of the v1.0 portfolio candidate. It contains just the final M4C Board A generator and M4B Board B endpoint plus useful simulation, verification, host measurement and engineering evidence. Experimental M2/M3 designs are not required.
 
-## Install and verify from project root
+**Hardware:** two Digilent Arty A7-35T boards (part `xc7a35ticsg324-1L`), a direct RJ45 patch cable, and separate USB/JTAG/UART connections for each board. **Tool:** AMD Vivado 2025.2.1. Vivado simulations/builds do **not** require hardware attached. Optional: Python 3, `pytest`, Icarus Verilog (`iverilog` and `vvp`), `g++`, `pyserial` for host measurement.
 
-```powershell
-python -m pip install pytest pyserial
+## Extract and generate one Vivado GUI project (Windows)
+
+1. On the feature branch (before merge), click **Code → Download ZIP**. After merge use `main`.
+2. Extract to a **short, new folder**, for example `C:\FPGA\Net`. Avoid overwriting any old `Low-latency-ethernet_v2` or the earlier archived bitstreams.
+3. Double-click `vivado\create_project.cmd`, or from a Vivado-enabled command prompt run:
+
+   ```bat
+   vivado -mode batch -source vivado/create_project.tcl
+   ```
+
+4. Open `build\v\EthAB\EthAB.xpr` in Vivado 2025.2.1. The Sources panel contains two independent top hierarchies. The **simulation** top `tb_m4c_board_pair` instantiates **both** FPGAs in a simulated Ethernet MII connection.
+5. Select the desired hardware synthesis top and its XDC as a **pair** via Vivado Tcl Console (change directory to the extracted repository first):
+
+   ```tcl
+   source vivado/board_config.tcl
+   fpga_select_board A
+   # or, after archiving a completed A build
+   fpga_select_board B
+   report_compile_order -constraints
+   ```
+
+   The effective constraint-set compile order must contain precisely the relevant board's generated XDC in both synthesis and implementation. **Never trust a constraint-set name alone.** The physical interface uses two generated XDC copies `build/v/xdc/A.xdc` and `build/v/xdc/B.xdc`, derived from the final hardware source XDCs.
+
+## Verify on a PC without two boards
+
+```bat
+python -m pip install pytest
 python -m pytest -q tests
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\run_m4b_sim.ps1"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\run_m4c_sim.ps1"
-python scripts/check_m4c_candidate.py
+python scripts/run_final_rtl.py
 ```
 
-The source-freeze checker tracks legacy candidate source integrity and may require its original baseline files; it is not a substitute for complete Vivado functional signoff. The main 52-test Python regression and M4C RTL simulation passed on the Windows reference system before hardware validation.
+The final Icarus command generates its own protocol frames (including the M4B burst and corrupted FCS) and runs **seven HDL benches**: two FIFOs, M4B RX overflow, M4B endpoint burst, MII feed TX, MII reply RX and the full M4C two-board test. The Python suite checks host telemetry, model, frame building, sources and one-XPR packaging. The independent C++ reference model test requires `g++`.
 
-## Build Board A + Board B independently
+For an end-to-end GUI simulation use **Flow Navigator → Run Simulation → Run Behavioral Simulation** and run to the testbench's `$finish`. Look for the `PASS tb_m4c_board_pair` output. Simulation is an idealised MII link, not an analogue PHY/wire test.
 
-```powershell
-& "C:\\AMDDesignTools\\2025.2.1\\Vivado\\bin\\vivado.bat" -mode batch -source scripts/build_m4c_generator.tcl
-python scripts/audit_m4c_reports.py
+## Build and preserve the two FPGA bitstreams
 
-& "C:\\AMDDesignTools\\2025.2.1\\Vivado\\bin\\vivado.bat" -mode batch -source scripts/build_m4b_endpoint.tcl
-python scripts/audit_m4b_reports.py
+In an AMD Vivado-enabled command prompt, after creating the project:
+
+```bat
+vivado -mode batch -source vivado/build_targets.tcl -tclargs both
 ```
 
-Do **not** program a board unless the relevant routed timing, CDC and I/O reports have been reviewed and the physical board/bitstream target is confirmed. The previously verified `v0.8B` Board B can be retained unchanged; it need not be rebuilt for the benchmark.
+The same project synthesizes/routes **one board at a time**. The build helper switches both top and constraints, then archives reports and bitstreams separately:
 
-## Hardware
+- `build/out/A/board_A.bit` — generator, top `ethernet_generator_a7_m4c`.
+- `build/out/B/board_B.bit` — endpoint, top `ethernet_udp_a7_buffered`.
 
-- Confirm the USB-JTAG identity of each physical board, rather than relying on COM numbers alone. In the reference tests Board A was COM4 and Board B was COM3, but these assignments may change after USB reconnection.
-- Connect **Board A RJ45 directly to Board B RJ45**. This is not the earlier UE300C host-generated test configuration.
-- Program Board A top `ethernet_generator_a7_m4c` and Board B top `ethernet_udp_a7_buffered`.
-- Connect both USB cables for power, JTAG and serial. Press and release BTN0 on both, verify physical link, allow stabilisation.
+The output directory is generated locally and not committed. Check top, constraints, implemented DRC, setup/hold/pulse-width margins, CDC warnings and external PHY I/O timing before programming. **Do not waive NSTD/UCIO or missing clocks to make a bitstream.** See [13 November Vivado acceptance](VIVADO_2026-11-13_ACCEPTANCE.md) for the previous local results and limitations. That acceptance validates the earlier local `v2` GUI run; the downloaded branch-head generator must still pass its own clean Windows Vivado test.
 
-## Run finite benchmark
+## Physical experiment (two boards)
 
-```powershell
-python scripts/m4c_hardware_benchmark.py --com COM4 --profile A --repeat 1 --require-all --csv build/hardware/m4c_smoke.csv
-python scripts/m4c_hardware_benchmark.py --com COM4 --profile all --repeat 3 --csv build/hardware/m4c_final_3x3.csv
-```
+- Identify each FPGA's hardware-manager JTAG serial and corresponding COM port. COM numbers can change between PCs; the original reference run used A=COM4, B=COM3.
+- Physically connect A RJ45 **directly to** B RJ45. Attach both USB cables for power, JTAG and UART.
+- Program each board with its **own** bitstream; never interchange the images.
+- Press/release BTN0 on both, allow link negotiation and reset settling, and verify the physical link before sending profile commands.
+- Install `pyserial` and run the host's telemetry benchmark:
 
-Compare all CSV records with the matching `.summary.json`, including min/max launch gaps, response counts, duplicates, invalid responses and late launches. The exact frozen user-hardware M4C evidence is checked into `evidence/m4c/`, and the aggregated verification outcome is in `evidence/REVIEWED_RESULTS.json`.
+  ```bat
+  python -m pip install pyserial
+  python scripts/m4c_hardware_benchmark.py --com COM4 --profile A --repeat 1 --require-all --csv build/hardware/m4c_smoke.csv
+  python scripts/m4c_hardware_benchmark.py --com COM4 --profile all --repeat 3 --csv build/hardware/m4c_final_3x3.csv
+  ```
 
-The version-specific RTL test benches and build scripts remain in `tb/` and `scripts/`. Build artifacts and bitstreams are not committed. See `docs/LIMITATIONS_V1.md` before reusing any performance numbers.
+The FPGA reports finite request-launch gaps and matching replies, **not** instrumented PHY pin times or continuous sustainable line rate. The independently reviewed historical hardware evidence is bundled in `evidence/`. The new output bitstreams must not be described as physically benchmarked until a new physical run is actually completed.
+
+## Project records
+
+[Architecture](ARCHITECTURE_V1.md) · [benchmark protocol](M4C_BENCHMARK_PROTOCOL.md) · [verification and performance](VERIFICATION_AND_PERFORMANCE_V1.md) · [current GUI guide](VIVADO_GUI_QUICKSTART.md) · [limitations](LIMITATIONS_V1.md).
+
+**ZIP hygiene:** only the files needed for this current workflow and relevant evidence/docs are bundled. Older milestones and intermediate scripts remain in repository history/online Git and are excluded from the GitHub archive using `.gitattributes export-ignore`.

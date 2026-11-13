@@ -51,9 +51,9 @@ def test_expected_profiles():
     assert struct.calcsize(mod.FORMAT)==40
 
 
-def test_frozen_sources():
-    import hashlib,json
-    manifest=json.loads((R/'docs/baselines/M4C_source_freeze.json').read_text())
+def test_final_baseline_integrity():
+    import hashlib, json
+    manifest=json.loads((R/'evidence/FINAL_ACTIVE_SOURCE_SHA256.json').read_text())
     for path,digest in manifest['files'].items():
         assert hashlib.sha256((R/path).read_bytes()).hexdigest()==digest, path
 

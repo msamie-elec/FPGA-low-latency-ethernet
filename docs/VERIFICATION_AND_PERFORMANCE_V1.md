@@ -45,6 +45,8 @@ The valid-report mean v0.6-to-v0.7 improvement was roughly **98.96%**, reflectin
 | Board A v0.9 M4C generator | +0.576 ns | +0.052 ns | 2,485 | 2,247 | 0 |
 | Board B v0.8B buffered endpoint | +0.737 ns | +0.046 ns | 2,175 | 6,119 | 0 |
 
+**Additional local GUI workflow acceptance (12–13 Nov 2026):** The user independently opened one `EthAB.xpr` on Vivado 2025.2.1, simulated both board tops, and generated and separately archived `board_A.bit` and `board_B.bit` with post-route reports. Both had zero final implemented DRC violations, positive pulse-width worst slack (+4.500 ns), and zero failing constrained timing endpoints. In the Board B CDC report, 303 endpoints were tool-classified safe (none unsafe/unknown), though there were 7 CDC-6 and 232 CDC-15 structural warnings. Full record: [13 Nov local Vivado acceptance](VIVADO_2026-11-13_ACCEPTANCE.md). **The newer GitHub Tcl generator/automatic XDC repair has not yet been rerun in that installed Vivado environment**, and these local November bitstreams have not received a separate physical benchmark.
+
 The implementations show positive overall constrained setup/hold slack and no critical CDC-1 report entries. However, the detailed CDC and methodology reports contain multibit data crossing and incomplete external I/O timing qualification concerns. Positive slack and zero CDC-1 warnings do not demonstrate formal asynchronous-data coherency or full PHY signoff. Both v0.8B FIFOs were implemented without BRAM. See [limitations](LIMITATIONS_V1.md).
 
 ## Data provenance and integrity

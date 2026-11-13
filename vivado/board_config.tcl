@@ -1,0 +1,128 @@
+# SPDX-License-Identifier: MIT
+# Source from Vivado GUI Tcl Console in an OPEN EthAB project:
+#   cd <repository-root>
+#   source vivado/board_config.tcl
+#   fpga_select_board A
+#   fpga_archive_current
+#   fpga_select_board B
+
+proc fpga_board_data {target} {
+    switch -nocase -- $target {
+        A - board_a {return [list A ethernet_generator_a7_m4c constrs_board_a]}
+        B - board_b {return [list B ethernet_udp_a7_buffered constrs_board_b]}
+        default {error "Invalid board '$target'; choose A or B"}
+    }
+}
+proc fpga_root_dir {} {
+    # GUI project is under <repo>/build/v/EthAB
+    set project_path [file normalize [get_property DIRECTORY [current_project]]]
+    return [file normalize [file join $project_path .. .. ..]]
+}
+# Fail closed if a selected board has no active constraint file.
+# Older one-project archives could switch TOP/CONSTRSET yet still leave B empty.
+proc fpga_ensure_board_xdc {board constrset} {
+    set fs [get_filesets $constrset]
+    set files [get_files -quiet -of_objects $fs]
+    if {[llength $files] == 0} {
+        # Newly generated GUI XDC retains historical pins and MII timing,
+        # omits the unsupported 'if' checks, and sets Arty A7 config voltage.
+        set xdc [file join [fpga_root_dir] build v xdc $board.xdc]
+        if {![file isfile $xdc]} {
+            error "Board $board has an EMPTY constraint set $constrset and no generated $xdc. Recreate the project; DO NOT build without XDC."
+        }
+        add_files -norecurse -fileset $constrset $xdc
+        set files [get_files -quiet -of_objects $fs]
+    }
+    if {[llength $files] != 1} {
+        error "Board $board expected exactly one XDC in $constrset, found [llength $files]: $files"
+    }
+    set_property USED_IN_SYNTHESIS true $files
+    set_property USED_IN_IMPLEMENTATION true $files
+    foreach phase {synthesis implementation} {
+        set active [get_files -compile_order constraints -used_in $phase -of_objects $fs]
+        if {[llength $active] < 1} {
+            error "Board $board has no constraints used in $phase: $constrset. Aborting configuration."
+        }
+    }
+    puts "XDC VERIFIED: Board $board | $constrset | $files | synthesis+implementation"
+    return $files
+}
+proc fpga_archive_current {} {
+    set top [get_property TOP [get_filesets sources_1]]
+    if {$top eq "ethernet_generator_a7_m4c"} {
+        set board A
+    } elseif {$top eq "ethernet_udp_a7_buffered"} {
+        set board B
+    } else {
+        error "Unrecognised synthesis top: $top"
+    }
+    set status [get_property STATUS [get_runs impl_1]]
+    if {![string match *Complete* $status]} {
+        error "Cannot archive board $board: implementation is not complete ($status)"
+    }
+    set project_path [file normalize [get_property DIRECTORY [current_project]]]
+    set project_name [get_property NAME [current_project]]
+    set impl_dir [file join $project_path $project_name.runs impl_1]
+    set source_bit [file join $impl_dir $top.bit]
+    if {![file isfile $source_bit]} {
+        error "Bitstream not found: $source_bit; run Generate Bitstream first"
+    }
+    set archive [file join [fpga_root_dir] build out $board]
+    file mkdir $archive
+    set dest [file join $archive board_$board.bit]
+    file copy -force $source_bit $dest
+    foreach path [glob -nocomplain -directory $impl_dir *.rpt] {
+        file copy -force $path [file join $archive [file tail $path]]
+    }
+    set manifest [open [file join $archive build_identity.txt] w]
+    puts $manifest "Board: $board"
+    puts $manifest "Top: $top"
+    puts $manifest "Part: [get_property PART [current_project]]"
+    puts $manifest "Constraints: [get_property CONSTRSET [get_runs impl_1]]"
+    puts $manifest "Vivado version: [version -short]"
+    puts $manifest "Run status: $status"
+    close $manifest
+    puts "ARCHIVED board $board bitstream and available routed reports: $archive"
+    return $dest
+}
+proc fpga_select_board {target} {
+    lassign [fpga_board_data $target] board top constrset
+    # Check whether the XDC was missing BEFORE the repair helper attaches it.
+    # Reattaching constraints to an already-active top MUST force a rebuild:
+    # otherwise Vivado might preserve a completed, unconstrained bitstream.
+    set xdc_was_missing [expr {[llength [get_files -quiet -of_objects [get_filesets $constrset]]] == 0}]
+    fpga_ensure_board_xdc $board $constrset
+    set current_top [get_property TOP [get_filesets sources_1]]
+    set current_constr [get_property CONSTRSET [get_runs synth_1]]
+    set impl_constr [get_property CONSTRSET [get_runs impl_1]]
+    set already_selected [expr {$current_top eq $top && $current_constr eq $constrset && $impl_constr eq $constrset}]
+    if {!$already_selected || $xdc_was_missing} {
+        # Switching top invalidates synthesis/implementation. Preserve finished
+        # outputs before reset; never treat an incomplete bitstream as valid.
+        # Do not archive a bitstream for the SAME target if its XDC was missing:
+        # it may have been generated by an unconstrained/stale implementation.
+        if {!($already_selected && $xdc_was_missing)} {
+            set project_path [get_property DIRECTORY [current_project]]
+            set project_name [get_property NAME [current_project]]
+            set previous_bit [file join $project_path $project_name.runs impl_1 $current_top.bit]
+            if {[file isfile $previous_bit]} {
+                if {[string match *Complete* [get_property STATUS [get_runs impl_1]]]} {
+                    fpga_archive_current
+                } else {
+                    puts "WARNING: Ignoring stale/incomplete bitstream for $current_top"
+                }
+            }
+        } else {
+            puts "WARNING: Repaired missing XDC for active Board $board. Resetting synth_1/impl_1; previous run is NOT qualified."
+        }
+        reset_run impl_1
+        reset_run synth_1
+    }
+    set_property TOP $top [get_filesets sources_1]
+    set_property CONSTRSET $constrset [get_runs synth_1]
+    set_property CONSTRSET $constrset [get_runs impl_1]
+    update_compile_order -fileset sources_1
+    puts "ACTIVE: Board $board | synthesis top=$top | constraints=$constrset"
+    puts "Simulation top remains tb_m4c_board_pair (both FPGAs)."
+    return $board
+}

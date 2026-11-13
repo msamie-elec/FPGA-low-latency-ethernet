@@ -1,0 +1,18 @@
+{
+  "notes": "Subset of original M4B frozen source hashes for final active IP (pre-existing verified SHA-256 values). The newer M4C top and M4C XDC are tested for presence/structure but are not represented by these older hashes.",
+  "files": {
+    "rtl/uart_rx.sv": "7847a671f983e4458890bfc9e59a5da8268c98e099e9432ad41fdbbffa9ebfd8",
+    "rtl/uart_tx.sv": "a69479dac3eb118757f07147e85f92e7594ddf78eec7ddb98d5e328735bb4593",
+    "rtl/mii_feed_tx.sv": "832d3216e15eebb435d9a7c764c41b270de36e4a7b1aebd36addab3d5875a0de",
+    "rtl/mii_reply_rx.sv": "98071362a3f2fb4169534c6651c0c57a53e6e1d3b9f935f86a20d4216b03dc24",
+    "rtl/feed_parser.sv": "dd2f8641c662cccf06b6db15c7a59b19d1ae40090aea53228bd03b7afa498a47",
+    "rtl/top_of_book.sv": "0eabf8246f9519b73530756a0127329de61507529836a052342709f41b668c58",
+    "rtl/feed_pipeline.sv": "9a48ab1343996067f24be0f20b58abd3e3134978c7dbe8f0f32b8146c8c28257",
+    "rtl/m4b_async_fifo.sv": "2291351b1acb943bd5d76689314ef33477cc8c6168be57d89ce3c2646aad1d7f",
+    "rtl/m4b_sync_fifo.sv": "fbeabf3546498491d4aad5e6bee8668f9238195ae3a74a8ce8e42ea67a772ac9",
+    "rtl/mii_udp_rx_m4b.sv": "b73c2e610a0fd737ee899ae121195258b74a83f4fbbb0833874d8d185be365a9",
+    "rtl/mii_udp_tx_m4b.sv": "e04c32ac21e9ba0e2c175c2e9404379556ea140c584ac40a67726de06eae78c5",
+    "rtl/ethernet_udp_a7_buffered.sv": "7e5a30956ddaab804f04fed6e4c18aa7d9bfa996ea2b9605979d213f4855279e",
+    "boards/arty_a7/ethernet_m4b_endpoint.xdc": "f616fa6f7485352edd2f9aab73190c8aa418ac15ebb813ba6e8ea8f73e96e5da"
+  }
+}
