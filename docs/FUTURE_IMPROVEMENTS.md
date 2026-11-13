@@ -6,6 +6,8 @@
 **State:** **Backlog only — no work authorised or scheduled**  
 **Release policy:** v1.0 is complete for its agreed *portfolio demonstrator* scope. The items below are possible future projects, **not release blockers**. Reopen only for a concrete client requirement, relevant job interview/portfolio need, or a separately scoped engineering project.
 
+**13 November operator addendum:** 10 manual BTN0 reset cycles passed both first and warm Profile C bursts (20,000 request/reply observations), with the Ethernet link confirmed before the control command. This does **not** discharge F05: electrical power-cycle recovery, cold link negotiation timing, cable-reconnect stress and long soak tests remain unverified. The pre-existing intermittent initial Profile C run (2/10 failures in one attempt) must remain in the evidence record.
+
 ## Verified v1.0 baseline to preserve
 
 - Platform: two Digilent **Arty A7-35T** boards, **100 Mb/s MII** direct Ethernet. Board A runs v0.9 M4C hardware-paced generator; Board B runs v0.8B UDP endpoint.
