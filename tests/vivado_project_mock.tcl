@@ -53,6 +53,31 @@ proc add_files {args} {
         default {error "Unexpected fileset: $fs"}
     }
 }
+proc get_files {args} {
+    global constraints_a constraints_b sources sim_files props
+    set idx [lsearch -exact $args -of_objects]
+    if {$idx < 0} {error "Test must use get_files -of_objects"}
+    set fs [lindex $args [expr {$idx + 1}]]
+    switch -- $fs {
+        constrs_board_a {set candidates $constraints_a}
+        constrs_board_b {set candidates $constraints_b}
+        sources_1 {set candidates $sources}
+        sim_1 {set candidates $sim_files}
+        default {error "Unknown fileset: $fs"}
+    }
+    set used_idx [lsearch -exact $args -used_in]
+    if {$used_idx >= 0} {
+        set phase [string toupper [lindex $args [expr {$used_idx + 1}]]]
+        set filtered {}
+        foreach file $candidates {
+            if {![info exists props($file,USED_IN_$phase)] || $props($file,USED_IN_$phase)} {
+                lappend filtered $file
+            }
+        }
+        return $filtered
+    }
+    return $candidates
+}
 proc update_compile_order {args} {}
 proc close_project {} {}
 proc open_project {path} {
@@ -131,7 +156,11 @@ if {[llength $constraints_a] != 1 || [llength $constraints_b] != 1} {
 }
 if {[llength $sim_files] != 1} {error "Expected combined simulation testbench"}
 source [file join $root vivado board_config.tcl]
+# Simulate the real failure: the named Board B fileset exists, but its
+# XDC association vanishes. Selector must repair it before run reset/build.
+set constraints_b {}
 fpga_select_board B
+if {[llength $constraints_b] != 1} {error "Board B missing XDC was not repaired"}
 assert_eq [get_property TOP sources_1] ethernet_udp_a7_buffered "Board B top"
 assert_eq [get_property CONSTRSET synth_1] constrs_board_b "Board B synthesis XDC"
 assert_eq [get_property CONSTRSET impl_1] constrs_board_b "Board B implementation XDC"
