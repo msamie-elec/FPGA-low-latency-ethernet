@@ -24,3 +24,6 @@ venv/
 .vscode/
 .idea/
 .DS_Store
+
+# Auto-generated HDL stimulus (created on demand by final regression)
+tests/generated/
