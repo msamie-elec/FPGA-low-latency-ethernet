@@ -36,9 +36,12 @@ echo.
 echo SUCCESS: Vivado project created and validated:
 echo %XPR%
 echo Opening Vivado GUI with the project...
-start "" "%VIVADO_EXE%" -mode gui "%XPR%"
+REM Vivado on Windows is a .bat wrapper. CALL avoids START command parsing
+REM failures ("filename, directory name, or volume label syntax incorrect").
+REM The console remains attached to Vivado until the GUI is closed.
+call "%VIVADO_EXE%" -mode gui "%XPR%"
 if errorlevel 1 (
-  echo NOTE: Automatic GUI launch was unsuccessful. Double-click the XPR above.
+  echo NOTE: Automatic GUI launch exited unsuccessfully. Open the XPR directly in Vivado.
 )
 popd
 pause
