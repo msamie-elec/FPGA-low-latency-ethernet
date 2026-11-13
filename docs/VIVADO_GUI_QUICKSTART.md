@@ -14,7 +14,7 @@ Open this single generated project in Vivado using File > Project > Open:
 
     build/v/EthAB/EthAB.xpr
 
-The XPR is generated under ignored build/ for portability. Creation alone runs no synthesis or implementation.
+The XPR is generated under ignored `build/` for portability. Creation alone runs no synthesis or implementation. **Do not run this generator over the user's previously accepted local `v2` working copy without first copying it elsewhere:** the generator invokes `create_project -force`, which is allowed to replace the existing generated project. Preserve the existing `build/out/A` and `build/out/B` archives separately before any rebuild.
 
 **XDC compatibility:** The verified legacy XDC files under `boards/arty_a7/` are hash-frozen and are NOT modified. During project generation, Vivado-compatible XDC copies are written to `build/v/xdc/A.xdc` and `build/v/xdc/B.xdc`. They retain every pin, clock and timing constraint unchanged; the only omissions are two unsupported Tcl `if` port-count guards, and they add `set_property CFGBVS VCCO [current_design]` and `set_property CONFIG_VOLTAGE 3.3 [current_design]`, as required by Digilent's Arty A7 Rev E schematic (configuration-bank 0 at 3.3 V). The checks now live in `vivado/check_mii_ports.tcl` and run after synthesis in the automated dual-target build. Existing older `v2` local projects can instead remove those two guards directly from each XDC and rerun synthesis.
 
@@ -31,7 +31,7 @@ Expand Design Sources to inspect Board A. To inspect Board B, run:
 
     fpga_select_board B
 
-The helper switches BOTH the synthesis top and the matching XDC set. Do not manually change the top alone without also changing the constraints. Old synth_1/impl_1 runs are reset when changing targets; completed bitstreams and available reports are archived before switching.
+The helper switches BOTH the synthesis top and the matching XDC set. **Only two physical XDCs belong in the active final design:** the M4C Board A XDC and the M4B Board B XDC. Older `m2*`, `m3*`, `demo.xdc` and `uart.xdc` files are **retained for reproducibility of earlier stages but are not imported into the generated `EthAB` project**. An empty unused `constrs_1` fileset is optional harmless metadata, not a third active constraint. Do not manually change the top alone without also changing the constraints. Old synth_1/impl_1 runs are reset when changing targets; completed bitstreams and available reports are archived before switching.
 
 | Target | Board A traffic generator | Board B buffered endpoint |
 |---|---|---|
@@ -46,7 +46,7 @@ The helper switches BOTH the synthesis top and the matching XDC set. Do not manu
 
 **Board B hierarchy:** Ethernet RX mii_udp_rx_m4b, 16-entry asynchronous RX FIFO, 100 MHz feed_pipeline with feed_parser / top_of_book, 16-entry asynchronous reply FIFO into mii_udp_tx_m4b, and separate 8-entry synchronous UART diagnostic FIFO plus uart_tx.
 
-Both synthesis top modules appear in Design Sources, but **only the selected module is synthesized as top**. The other is not instantiated by it.
+Both synthesis top modules appear in Design Sources, but **only the selected module is synthesized as top**. The other is not instantiated by it. For clean browsing there should be **one XDC in `constrs_board_a` and one in `constrs_board_b`**; no other constraint files should be attached in this project. Do not delete historical XDCs from the Git source tree merely to make the GUI hierarchy look shorter.
 
 ### Verify effective XDC files before synthesis or implementation
 
@@ -97,7 +97,9 @@ Alternatively, in the GUI select Board A with fpga_select_board A, use Run Synth
 
 Generate Board B's bitstream, then run fpga_archive_current. This deliberately reuses the single project's synthesis/implementation runs while preserving the two finished outputs. The original separate Vivado batch scripts remain unchanged for reproducing their historical detailed routed reports.
 
-**IMPORTANT:** This new one-project Tcl workflow was tested through Tcl mock/structural checks but has NOT yet been run inside installed AMD Vivado here. Run the first local Vivado 2025.2.1 acceptance check and examine routed timing, clock-domain crossings, PHY I/O and methodology warnings before programming newly generated bitstreams. Positive slack or a completed bitstream alone is not full PHY/CDC qualification.
+**Evidence status (13 November 2026):** The user completed the one-XPR/two-top flow in a local Windows Vivado 2025.2.1 `v2` working copy, archiving both final bitstreams and routed reports. See [local acceptance measurements and exact limitation list](VIVADO_2026-11-13_ACCEPTANCE.md). The GitHub branch's **newer generator/XDC-copy fail-closed guard** is verified in CI Tcl mocks but **has not yet been independently rerun in installed Vivado**. A fresh short-path checkout test is required before calling this branch's packaging reproducible end-to-end on a clean Windows machine.
+
+**Do not add the bitstreams or unredacted raw machine-specific reports to Git.** Positive slack, zero DRC, and CDC results categorized Safe are insufficient for complete PHY/CDC timing signoff. The frozen historical physical benchmark measurements are **not** a new hardware test of these November 2026 bitstreams.
 
 ## Step 5: Program the TWO Arty A7-35T boards
 
