@@ -161,6 +161,15 @@ source [file join $root vivado board_config.tcl]
 set constraints_b {}
 fpga_select_board B
 if {[llength $constraints_b] != 1} {error "Board B missing XDC was not repaired"}
+# Reproducing a missing XDC while B is ALREADY selected must invalidate the
+# old B implementation even though TOP and CONSTRSET values do not change.
+set resets_before_same_board $resets
+set constraints_b {}
+fpga_select_board B
+if {[llength $constraints_b] != 1} {error "Selected Board B XDC was not repaired"}
+if {$resets != $resets_before_same_board + 2} {
+    error "Restoring active Board B XDC must reset synthesis and implementation"
+}
 assert_eq [get_property TOP sources_1] ethernet_udp_a7_buffered "Board B top"
 assert_eq [get_property CONSTRSET synth_1] constrs_board_b "Board B synthesis XDC"
 assert_eq [get_property CONSTRSET impl_1] constrs_board_b "Board B implementation XDC"
