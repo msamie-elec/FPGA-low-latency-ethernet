@@ -53,7 +53,7 @@ These are **separate experiments**, not a single composite test:
 
 ## Quick start — simulate and explore without boards
 
-**Minimum:** Windows + AMD Vivado **2025.2.1**. Optional Python 3, `pytest`, `iverilog`/`vvp` and `pyserial` for testing. In GitHub, choose the **current documentation/feature branch** when downloading before the stacked PRs reach `main`; the ordinary `main` ZIP does **not yet include** this flow. Unzip into a **short path** such as `C:\FPGA\Net` (not a long nested project folder).
+**Minimum:** Windows + AMD Vivado **2025.2.1**. Optional Python 3, `pytest`, `iverilog`/`vvp` and `pyserial` for testing. **Before the draft PRs are merged**, open the GitHub branch [`feature/m4c-cold-start-reliability`](https://github.com/msamie-elec/FPGA-low-latency-ethernet/tree/feature/m4c-cold-start-reliability), click **Code → Download ZIP**, and extract it to a **short path** such as `C:\FPGA\Net`. The ordinary **`main`** ZIP does **not yet include** this updated one-XPR flow. Avoid a long nested project folder.
 
 1. Double-click **`vivado/create_project.cmd`** in Windows Explorer, or from a **Vivado-enabled command prompt** run `vivado -mode batch -source vivado/create_project.tcl`.
 2. Open **`build/v/EthAB/EthAB.xpr`**. There is **one** Vivado XPR and **two** separate synthesizable tops; the simulation top is `tb_m4c_board_pair`.
