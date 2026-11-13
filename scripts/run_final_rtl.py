@@ -2,7 +2,7 @@
 """Cross-platform Icarus regression for the FINAL M4B/M4C dual-FPGA design.
 
 Requires iverilog and vvp on PATH. No Vivado or physical boards are needed.
-Source lists follow the established run_m4b_sim.ps1 and run_m4c_sim.ps1 scripts.
+Source lists contain only the final M4B/M4C RTL and independent unit benches.
 """
 from __future__ import annotations
 import shutil
@@ -27,8 +27,8 @@ TESTS = [
     ("tb_m4b_async_fifo", ["rtl/m4b_async_fifo.sv", "tb/tb_m4b_async_fifo.sv"]),
     ("tb_m4b_rx_overflow", ["rtl/mii_udp_rx_m4b.sv", "rtl/m4b_async_fifo.sv", "tb/tb_m4b_rx_overflow.sv"]),
     ("tb_m4b_endpoint_burst", M4B + ["rtl/mii_reply_rx.sv", "tb/tb_m4b_endpoint_burst.sv"]),
-    ("tb_m4b_board_pair", M4B + ["rtl/uart_rx.sv", "rtl/mii_reply_rx.sv",
-         "rtl/mii_feed_tx.sv", "rtl/ethernet_generator_a7_m2c.sv", "tb/tb_m4b_board_pair.sv"]),
+    ("tb_mii_feed_tx", ["rtl/mii_feed_tx.sv", "tb/tb_mii_feed_tx.sv"]),
+    ("tb_mii_reply_rx", ["rtl/mii_reply_rx.sv", "tb/tb_mii_reply_rx.sv"]),
     ("tb_m4c_board_pair", M4C + ["tb/tb_m4c_board_pair.sv"]),
 ]
 
@@ -42,6 +42,7 @@ def main() -> int:
         return 2
     OUT.mkdir(parents=True, exist_ok=True)
     try:
+        run([sys.executable, "scripts/m2c_vectors.py"])
         run([sys.executable, "scripts/m4b_vectors.py"])
         for name, sources in TESTS:
             missing = [s for s in sources if not (ROOT / s).is_file()]
@@ -54,7 +55,7 @@ def main() -> int:
     except (OSError, subprocess.CalledProcessError) as exc:
         print(f"FAIL final RTL regression: {exc}", file=sys.stderr)
         return 1
-    print("PASS final M4B/M4C RTL regression: six HDL testbenches")
+    print(f"PASS final M4B/M4C RTL regression: {len(TESTS)} HDL testbenches")
     return 0
 
 if __name__ == "__main__":
