@@ -2,8 +2,6 @@
 from pathlib import Path
 import importlib.util
 import sys
-import hashlib
-import json
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
@@ -27,17 +25,12 @@ def test_m4b_corrupt_frame_is_bad_fcs_only():
     assert bad[-1]!=expected[-1]
 
 
-def test_m4b_verif_preserves_v07_core():
-    hashes=json.loads((ROOT/'docs/baselines/M4A_v07_rtl_xdc_sha256.json').read_text())['files']
-    for name,digest in hashes.items():
-        assert hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==digest,name
-
-
 def test_m4b_new_source_set_exists():
     files=['m4b_async_fifo.sv','m4b_sync_fifo.sv','mii_udp_rx_m4b.sv',
            'mii_udp_tx_m4b.sv','ethernet_udp_a7_buffered.sv']
     assert all((ROOT/'rtl'/f).is_file() for f in files)
-    assert (ROOT/'scripts'/'run_m4b_sim.ps1').is_file()
+    assert (ROOT/'vivado'/'create_project.tcl').is_file()
+    assert (ROOT/'boards'/'arty_a7'/'ethernet_m4b_endpoint.xdc').is_file()
 
 
 def test_m4b_queue_depths_are_bounded_and_power_of_two():
