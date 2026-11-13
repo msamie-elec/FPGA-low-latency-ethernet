@@ -26,6 +26,9 @@ jobs:
           mkdir -p build/download_check
           git archive --format=tar HEAD | tar -xf - -C build/download_check
           test -f build/download_check/vivado/create_project.tcl
+          test -f build/download_check/sim/waves/setup_demo.tcl
+          test -f build/download_check/docs/WAVEFORM_DEMO.md
+          test -f build/download_check/tests/test_wave_demo.py
           test -f build/download_check/boards/arty_a7/ethernet_m4c_generator.xdc
           test -f build/download_check/boards/arty_a7/ethernet_m4b_endpoint.xdc
           test ! -e build/download_check/rtl/ethernet_generator_a7_m2c.sv
