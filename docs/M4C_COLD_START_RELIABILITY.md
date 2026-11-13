@@ -103,3 +103,13 @@ Board B FIFO overflow counters or report packet jitter.
 Only after reviewing raw telemetry and first/warm pass rates should we
 decide whether additional RTL-level debugging is justified. Never
 change frozen HDL or constraints automatically as a response to loss.
+
+## Recorded operator outcome — 13 November 2026
+
+The operator ran the exact **manual BTN0 reset** command above on two programmed Arty A7-35T boards. The final terminal screenshot showed **10/10 passing first bursts and 10/10 passing warm bursts**. In every cycle, the tool reported `received=40/40`, `missing=0`, `unique=1000` for both phases. That is 20 passing 1,000-request finite bursts under manually reset, PHY-link-confirmed conditions.
+
+Local evidence folder: `build/hardware/cold_start/cold_start_20261113T194925642880Z/`. The CSV/JSON themselves have **not** been uploaded here; this summary is transcribed from the operator's console screenshot. Do not describe it as true electrical cold starts, exact post-reset acquisition-time measurement, or 100% reliability across untested conditions. An earlier 10-run Profile C attempt had two runs with no unique replies before later passing runs; preserve that adverse observation alongside the subsequent successful repeats.
+
+**Next separate experiment, if authorised:** use `--mode power-cycle`, remove/reapply both USB supplies, reprogram both volatile JTAG images, confirm both PHY links and type READY at each live prompt. No power-cycle result is currently claimed.
+
+For a complete novice-friendly sequence explaining exactly **which window** accepts commands and where to type READY, use [test operations guide](TEST_OPERATIONS_GUIDE.md).
