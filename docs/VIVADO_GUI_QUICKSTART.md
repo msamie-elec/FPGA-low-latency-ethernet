@@ -66,7 +66,17 @@ In Vivado select Run Simulation > Run Behavioral Simulation and enter in the XSi
 
     run all
 
-Look for the PASS tb_m4c_board_pair completion message. PHY analog/electrical timing is not simulated. The independent Icarus suite has six final testbenches:
+Look for the PASS tb_m4c_board_pair completion message. PHY analog/electrical timing is not simulated.
+
+**For a readable request/reply waveform:** The updated simulation-only testbench exposes decoded request/response payload bytes and Board B acceptance / Board A scoreboard milestones. From the repository root in the Vivado Tcl Console, while behavioral simulation is open:
+
+    source sim/waves/setup_demo.tcl
+    restart
+    run all
+
+The script saves a locally generated `sim/waves/dual_board_demo.wcfg`. Zoom to one request/reply exchange before taking a real Vivado screenshot. See [waveform demonstration guide](WAVEFORM_DEMO.md). This view is not a hardware PHY measurement. If you are in the earlier extracted v3, update the testbench and wave script first, then relaunch simulation.
+
+The independent Icarus suite has **seven** final testbenches:
 
     python scripts/run_final_rtl.py
 
