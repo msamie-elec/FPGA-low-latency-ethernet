@@ -19,7 +19,9 @@ This generates **one editable .xpr file** to open in Vivado GUI:
 
     build/v/EthAB/EthAB.xpr
 
-Both designs appear in its source tree. Use the Vivado **Tcl Console** from the repository root to select the synthesis hierarchy **and its matching XDC constraints simultaneously**:
+Both designs appear in the source tree. The **only two active physical constraint files** for the final design are `ethernet_m4c_generator.xdc` (A) and `ethernet_m4b_endpoint.xdc` (B). The generator creates compatible copies, `build/v/xdc/A.xdc` and `build/v/xdc/B.xdc`, and assigns one to each mutually exclusive Vivado constraint set. Other XDCs in the repository are **historical references only** and are not loaded into the final `EthAB.xpr`.
+
+Use the Vivado **Tcl Console** from the repository root to select the synthesis hierarchy **and its matching XDC constraints simultaneously**:
 
     source vivado/board_config.tcl
     fpga_select_board A     ;# M4C traffic generator, board A constraints
@@ -30,7 +32,9 @@ Both designs appear in its source tree. Use the Vivado **Tcl Console** from the 
 | Board A — generator and scoreboard | ethernet_generator_a7_m4c | constrs_board_a |
 | Board B — buffered UDP processor | ethernet_udp_a7_buffered | constrs_board_b |
 
-**Do not switch top alone without changing the constraint set.** The separate simulation top remains tb_m4c_board_pair, which instantiates both boards with a simulated MII connection. No physical boards are required to inspect RTL or run behavioral simulation.
+**Do not switch top alone without changing the constraint set.** **Before synthesis/implementation**, execute `report_compile_order -constraints` and confirm that the selected board's XDC appears in **both** sections. A previous local Board B attempt routed with an *empty* `constrs_board_b` despite its name being selected; the PR now includes a fail-closed check for this error. Never generate a bitstream with unconstrained pin locations, clock inputs or `NSTD-1`/`UCIO-1` violations.
+
+The separate simulation top remains `tb_m4c_board_pair`, which instantiates both boards with a simulated MII connection. No physical boards are required to inspect RTL or run behavioral simulation.
 
 The same Vivado project can synthesize, implement and generate **two independent bitstreams**, archived separately by the build driver:
 
@@ -40,7 +44,9 @@ Output locations: build/out/A/board_A.bit and build/out/B/board_B.bit. For inter
 
 **Windows note:** extract the GitHub ZIP to a short folder such as `C:\FPGA\Net` to avoid Windows path-length errors. Keep Vivado working folders short.
 
-**Read the [one-project Vivado GUI guide](docs/VIVADO_GUI_QUICKSTART.md)** for hierarchy, simulation, implementation, programming and validation limitations. These portability scripts are new and **have not yet been tested inside Vivado here**; they do not modify the historically hardware-verified RTL.
+**Windows acceptance milestone — 12–13 November 2026:** In the user's existing local `Low-latency-ethernet_v2` GUI working copy, both synthesis tops were independently synthesized, routed, checked, bitstreams generated and saved into separate archives. Board A achieved **+0.576 ns setup WNS**, Board B **+0.737 ns**; both showed zero final DRC violations. These results validate the **local workflow**, but the GitHub branch's subsequently improved XDC self-check and project generator have **not yet undergone a fresh Windows Vivado acceptance run**. CI tests only the Python, Icarus RTL and Tcl-mock packaging paths.
+
+**Read the [one-project GUI guide](docs/VIVADO_GUI_QUICKSTART.md)** and the [13 Nov local Vivado acceptance record](docs/VIVADO_2026-11-13_ACCEPTANCE.md) for the exact results, limitations and next verification gate. No physical RTL or frozen historical XDC was changed by this packaging PR.
 
 ## System overview — TWO connected FPGA boards
 
@@ -57,7 +63,9 @@ flowchart LR
 
 **Board A** creates 1,000-packet benchmark bursts in FPGA hardware and checks unique replies; the laptop sends one UART profile command and collects the 40-byte telemetry report. See [architecture](docs/ARCHITECTURE_V1.md).
 
-## Physical hardware results — 11 November 2026
+## Physical hardware results — 11 November 2026 (historical benchmark)
+
+*These measured results predate the 12–13 November `EthAB` GUI packaging builds. The newly archived local bitstreams have not been separately retested as a two-board physical benchmark.*
 
 | Result | Recorded value | Interpretation |
 |---|---:|---|
@@ -100,12 +108,14 @@ Python reference model / regression:
 | [vivado/](vivado/) | Single-project GUI generator, Board A/B selector, dual-build driver and Windows launcher |
 | [rtl/](rtl/) | Board A, Board B, shared parsers and FIFOs; historical variants retained |
 | [tb/](tb/) | Full simulated two-board link, FIFO and burst testbenches |
-| [boards/arty_a7/](boards/arty_a7/) | FPGA physical pin and clock constraints |
+| [boards/arty_a7/](boards/arty_a7/) | Final Board A/B XDC plus archived older-stage pin/clock constraints (only 2 active in the generated GUI project) |
 | [scripts/](scripts/) | Vivado batch builds, CI RTL regressions, benchmarks, report audits |
 | [software/](software/) and [tests/](tests/) | Independent Python/C++ models and regression |
 | [evidence/](evidence/) | Primary hardware benchmark CSV/JSON and reviewed summary |
 | [docs/](docs/) | Architecture, verified measurements, reproduction, caveats |
 | [portfolio/](portfolio/) | Upwork and LinkedIn case studies and publication checklist |
+
+**Active release files:** [13 Nov Vivado acceptance](docs/VIVADO_2026-11-13_ACCEPTANCE.md) · [GUI quick start](docs/VIVADO_GUI_QUICKSTART.md) · [Limitations](docs/LIMITATIONS_V1.md).
 
 **Additional material:** [Release notes](docs/RELEASE_NOTES_V1.md) · [Future improvements (not required for this release)](docs/FUTURE_IMPROVEMENTS.md) · [Upwork case study](portfolio/UPWORK_CASE_STUDY.md) · [LinkedIn summary](portfolio/LINKEDIN_PROJECT.md).
 
