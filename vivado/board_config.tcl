@@ -18,6 +18,35 @@ proc fpga_root_dir {} {
     set project_path [file normalize [get_property DIRECTORY [current_project]]]
     return [file normalize [file join $project_path .. .. ..]]
 }
+# Fail closed if a selected board has no active constraint file.
+# Older one-project archives could switch TOP/CONSTRSET yet still leave B empty.
+proc fpga_ensure_board_xdc {board constrset} {
+    set fs [get_filesets $constrset]
+    set files [get_files -quiet -of_objects $fs]
+    if {[llength $files] == 0} {
+        # Newly generated GUI XDC retains historical pins and MII timing,
+        # omits the unsupported 'if' checks, and sets Arty A7 config voltage.
+        set xdc [file join [fpga_root_dir] build v xdc $board.xdc]
+        if {![file isfile $xdc]} {
+            error "Board $board has an EMPTY constraint set $constrset and no generated $xdc. Recreate the project; DO NOT build without XDC."
+        }
+        add_files -norecurse -fileset $constrset $xdc
+        set files [get_files -quiet -of_objects $fs]
+    }
+    if {[llength $files] != 1} {
+        error "Board $board expected exactly one XDC in $constrset, found [llength $files]: $files"
+    }
+    set_property USED_IN_SYNTHESIS true $files
+    set_property USED_IN_IMPLEMENTATION true $files
+    foreach phase {synthesis implementation} {
+        set active [get_files -compile_order constraints -used_in $phase -of_objects $fs]
+        if {[llength $active] < 1} {
+            error "Board $board has no constraints used in $phase: $constrset. Aborting configuration."
+        }
+    }
+    puts "XDC VERIFIED: Board $board | $constrset | $files | synthesis+implementation"
+    return $files
+}
 proc fpga_archive_current {} {
     set top [get_property TOP [get_filesets sources_1]]
     if {$top eq "ethernet_generator_a7_m4c"} {
@@ -58,6 +87,7 @@ proc fpga_archive_current {} {
 }
 proc fpga_select_board {target} {
     lassign [fpga_board_data $target] board top constrset
+    fpga_ensure_board_xdc $board $constrset
     set current_top [get_property TOP [get_filesets sources_1]]
     set current_constr [get_property CONSTRSET [get_runs synth_1]]
     set impl_constr [get_property CONSTRSET [get_runs impl_1]]
