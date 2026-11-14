@@ -77,3 +77,9 @@ The FPGA reports finite request-launch gaps and matching replies, **not** instru
 [Architecture](ARCHITECTURE_V1.md) · [benchmark protocol](M4C_BENCHMARK_PROTOCOL.md) · [verification and performance](VERIFICATION_AND_PERFORMANCE_V1.md) · [current GUI guide](VIVADO_GUI_QUICKSTART.md) · [limitations](LIMITATIONS_V1.md).
 
 **ZIP hygiene:** only the files needed for this current workflow and relevant evidence/docs are bundled. Older milestones and intermediate scripts remain in repository history/online Git and are excluded from the GitHub archive using `.gitattributes export-ignore`.
+
+## Fresh operator follow-up — local `Low-latency-ethernet_v5` on 13 November 2026
+
+After the earlier `v2` acceptance, the operator extracted a fresh GitHub feature ZIP as local `v5`, ran the combined behavioral simulation, completed synthesis/implementation for both top/XDC combinations, generated separate `board_A.bit` and `board_B.bit` and physically exercised the two boards. The photographed PowerShell runs included Profile B `--repeat 10`, Profile C `--repeat 10` (one attempt with initial failures and a later passing attempt), and the separate ten-cycle BTN0 first/warm study. This **extends** the earlier local acceptance but is still operator-observed evidence, not a CI Vivado run or formally reviewed complete raw report bundle.
+
+Exact commands and how to distinguish **PowerShell**, **Vivado Tcl** and interactive **READY** are now consolidated in [TEST_OPERATIONS_GUIDE.md](TEST_OPERATIONS_GUIDE.md); physical pin meanings are in [XDC_AND_IO_REFERENCE.md](XDC_AND_IO_REFERENCE.md). Preserve the fresh CSV/JSON and the earlier failed attempt; **do not claim raw v5 data is committed** until those exact outputs are uploaded and reviewed.

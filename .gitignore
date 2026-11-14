@@ -27,3 +27,6 @@ venv/
 
 # Auto-generated HDL stimulus (created on demand by final regression)
 tests/generated/
+
+# Vivado XSim generated waveform layout; source of truth is sim/waves/setup_demo.tcl
+/sim/waves/*.wcfg

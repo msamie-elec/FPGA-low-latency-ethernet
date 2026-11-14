@@ -41,7 +41,6 @@ boards/arty_a7/uart.xdc export-ignore
 boards/arty_s7/demo.xdc export-ignore
 boards/arty_s7/uart.xdc export-ignore
 docs/FPGA_Ethernet_v1_0_Engineering_Report.pdf export-ignore
-docs/FUTURE_IMPROVEMENTS.md export-ignore
 docs/M2A_HARDWARE_PASS_2026-11-11.md export-ignore
 docs/M2B_HARDWARE_VERIFIED_2026-11-11.md export-ignore
 docs/M2C_ARCHITECTURE.md export-ignore
