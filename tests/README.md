@@ -12,7 +12,7 @@ This directory holds **test code**, not measured hardware output files.
 | `vivado_project_mock.tcl` | Tcl mock helper used by automated project tests | Test helper |
 | `generated/` | Generated vectors when running regressions | **Ignored**, disposable |
 
-The **HDL simulation testbenches** are in `../tb/`. Test *runner scripts*, including `../scripts/m4c_hardware_benchmark.py` and `../scripts/m4c_cold_start.py`, are in `../scripts/` because they are invoked directly by the operator and interact with hardware. The physical **test results** (CSV/JSON) are generated locally in **`../build/hardware/`** under Git-ignored `build/`. Selected reviewed original records are preserved **once** under **`../evidence/hardware/`** for GitHub readers.
+The **HDL simulation testbenches** are in `../tb/`. Simulation-specific waveform configuration and the canonical waveform generator script live in [`../sim/`](../sim/README.md), not in this test-code folder. Test *runner scripts*, including `../scripts/m4c_hardware_benchmark.py` and `../scripts/m4c_cold_start.py`, are in `../scripts/` because they are invoked directly by the operator and interact with hardware. The physical **test results** (CSV/JSON) are generated locally in **`../build/hardware/`** under Git-ignored `build/`. Selected reviewed original records are preserved **once** under **`../evidence/hardware/`** for GitHub readers.
 
 This avoids mixing repeatable source tests with transient local measurements or committing multiple copies of auto-generated Vivado or waveform files.
 
