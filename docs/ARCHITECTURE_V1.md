@@ -114,7 +114,9 @@ FPGA-low-latency-ethernet/
 │   ├── board_config.tcl           Select top + effective XDC; archive output
 │   ├── build_targets.tcl          Batch A/B build
 │   └── check_mii_ports.tcl        Post-synthesis port-count checks
-├── sim/waves/setup_demo.tcl       XSim five-group A → B → A waveform layout
+├── sim/
+│   ├── README.md                  Simulation source/configuration vs generated outputs
+│   └── waves/setup_demo.tcl       XSim five-group A → B → A waveform layout
 ├── scripts/
 │   ├── run_final_rtl.py           Seven Icarus RTL benches
 │   ├── m4c_hardware_benchmark.py  A/B/C finite-burst UART controller/parser
@@ -122,8 +124,8 @@ FPGA-low-latency-ethernet/
 │   ├── m2c_vectors.py            Deterministic stimulus generation
 │   └── m4b_vectors.py            Deterministic stimulus generation
 ├── software/                      Reference model(s)
-├── tests/                         Host, model and packaging tests
-├── evidence/                      Reviewed benchmark results and curated CSV/JSON
+├── tests/                         Host, model and packaging checks (see tests/README.md)
+├── evidence/hardware/             Reviewed operator benchmark reset/power-cycle CSV/JSON
 └── docs/                          Detailed guides, limitations, test evidence
 ```
 
