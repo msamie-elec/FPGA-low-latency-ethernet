@@ -34,10 +34,11 @@ These are **separate experiments**, not a single composite test:
 | Original M4C finite-burst matrix, 11 Nov 2026 | **9,000/9,000** valid unique replies across 9 runs | 3 × 1,000 requests each at **10k / 50k / 100k** FPGA launch requests/s, no missing/dup/invalid/late |
 | Fresh local `v5` Profile B, 13 Nov | **10/10** 1,000-request runs, zero missing | Repeated 50k/s finite-burst test |
 | Fresh local `v5` Profile C, 13 Nov | Initial 10-run attempt: **2 failed, 8 passed**; subsequent separate run **10/10 passed** | Intermittent issue was observed and **must not be hidden** by later passes |
-| **Manual BTN0 reset**, Profile C, 13 Nov | **10/10 first + 10/10 warm** bursts passed; 20,000 valid replies, zero missing reported | Successful first-burst exercise after **operator-controlled resets and link confirmation**; **not** a power-cycle test |
+| **Manual BTN0 reset**, Profile C, 13 Nov | **10/10 first + 10/10 warm** bursts passed; 20,000 unique replies, zero missing | Operator-controlled reset and link-ready first-burst test; **not** a power-cycle test |
+| **Operator-confirmed USB power-cycle mode**, Profile C, 14 Nov | **5/5 first + 5/5 warm** bursts passed; 10,000 unique replies, zero missing | Distinct power-cycle-mode test after operator confirmation and PHY link check; USB disconnection and exact reprogramming events are **not recorded by the script** |
 | Routed Vivado design, A / B | Setup WNS **+0.576 / +0.737 ns**, hold WHS **+0.052 / +0.046 ns**; zero routed DRC violations in documented local acceptance | Constrained implementation met reported checks; **not** full PHY/CDC signoff |
 
-**Read the evidence and limitations:** [verification and honest result boundaries](docs/VERIFICATION_AND_PERFORMANCE_V1.md), [13 Nov local Vivado reports](docs/VIVADO_2026-11-13_ACCEPTANCE.md), [known gaps](docs/LIMITATIONS_V1.md). The nominal **100,000/s** is Board A's internal FPGA-measured request-*launch* rate during finite ~10 ms bursts, **not independently timestamped wire speed, maximum sustainable throughput or processing latency under load**. User-observed `v5` reset test CSV/JSON remain **local** and are not misrepresented as committed raw evidence. The earlier failed runs also remain part of the record.
+**Read the evidence and limitations:** [verification and honest result boundaries](docs/VERIFICATION_AND_PERFORMANCE_V1.md), [13 Nov local Vivado reports](docs/VIVADO_2026-11-13_ACCEPTANCE.md), [known gaps](docs/LIMITATIONS_V1.md). The nominal **100,000/s** is Board A's internal FPGA-measured request-*launch* rate during finite ~10 ms bursts, **not independently timestamped wire speed, maximum sustainable throughput or processing latency under load**. Uploaded `v5` reset and power-cycle CSV/JSON were reviewed and committed **byte-for-byte** under [`evidence/hardware/`](evidence/hardware/README.md), separately from Git-ignored local `build/hardware/` outputs. The earlier failed runs also remain part of the record.
 
 ## Follow this route through the project
 
@@ -123,8 +124,8 @@ python scripts/m4c_cold_start.py --com COM4 --mode reset --profile C --cycles 10
 | `vivado/` | Single-XPR generator, board/XDC selector, dual-target build driver |
 | `sim/waves/` | **One** waveform-generation script; no redundant committed `.wcfg` |
 | `scripts/` | Finite-burst hardware benchmark, manual-reset tool, final seven-bench regression |
-| `software/`, `tests/` | Host/reference model verification |
-| `evidence/`, `docs/` | Auditable original benchmark data, measured results, warnings and operator instructions |
+| `software/`, [`tests/`](tests/README.md) | Reference models and automated test definitions; *not* hardware measurements |
+| [`evidence/`](evidence/hardware/README.md), `docs/` | Curated, reviewed measurements (including reset/power-cycle raw captures), warnings and operator instructions |
 | `build/` | **Local only** — generated XPR, bitstreams, Vivado reports, raw hardware tests (Git-ignored) |
 
 The **GitHub Code → Download ZIP** is curated with `.gitattributes export-ignore` so older M2/M3 RTL, obsolete XDCs, draft work and generated files are omitted; `git clone` retains tracked engineering history. The ZIP can regenerate an XPR and test vectors, without shipping local bitstreams or personal COM/JTAG identifiers.
