@@ -35,7 +35,7 @@ These are **separate experiments**, not a single composite test:
 | Fresh local `v5` Profile B, 13 Nov | **10/10** 1,000-request runs, zero missing | Repeated 50k/s finite-burst test |
 | Fresh local `v5` Profile C, 13 Nov | Initial 10-run attempt: **2 failed, 8 passed**; subsequent separate run **10/10 passed** | Intermittent issue was observed and **must not be hidden** by later passes |
 | **Manual BTN0 reset**, Profile C, 13 Nov | **10/10 first + 10/10 warm** bursts passed; 20,000 unique replies, zero missing | Operator-controlled reset and link-ready first-burst test; **not** a power-cycle test |
-| **Operator-confirmed USB power-cycle mode**, Profile C, 14 Nov | **5/5 first + 5/5 warm** bursts passed; 10,000 unique replies, zero missing | Distinct power-cycle-mode test after operator confirmation and PHY link check; USB disconnection and exact reprogramming events are **not recorded by the script** |
+| **After overnight power-off and reprogramming**, Profile C, 14 Nov | **5/5 first + 5/5 warm** software bursts passed; 10,000 unique replies, zero missing | Operator confirms both boards were disconnected overnight and reprogrammed before the session; **not** five independently verified physical power cycles |
 | Routed Vivado design, A / B | Setup WNS **+0.576 / +0.737 ns**, hold WHS **+0.052 / +0.046 ns**; zero routed DRC violations in documented local acceptance | Constrained implementation met reported checks; **not** full PHY/CDC signoff |
 
 **Read the evidence and limitations:** [verification and honest result boundaries](docs/VERIFICATION_AND_PERFORMANCE_V1.md), [13 Nov local Vivado reports](docs/VIVADO_2026-11-13_ACCEPTANCE.md), [known gaps](docs/LIMITATIONS_V1.md). The nominal **100,000/s** is Board A's internal FPGA-measured request-*launch* rate during finite ~10 ms bursts, **not independently timestamped wire speed, maximum sustainable throughput or processing latency under load**. Uploaded `v5` reset and power-cycle CSV/JSON were reviewed and committed **byte-for-byte** under [`evidence/hardware/`](evidence/hardware/README.md), separately from Git-ignored local `build/hardware/` outputs. The earlier failed runs also remain part of the record.
@@ -76,7 +76,7 @@ These are **separate experiments**, not a single composite test:
    run all
    ```
 
-   Look for `PASS tb_m4c_board_pair`, correct sequence matches and the final PASS flag. The saved `.wcfg` is generated *locally* under `sim/waves/`, not duplicated in the Git source ZIP.
+   Look for `PASS tb_m4c_board_pair`, correct sequence matches and the final PASS flag. The saved `.wcfg` is generated *locally* under `sim/waves/`, not duplicated in the Git source ZIP. See [`sim/README.md`](sim/README.md) for the separation between simulation setup, HDL testbenches, automated tests and generated results.
 
 5. To build both bitstreams from an installed Vivado command prompt:
 
