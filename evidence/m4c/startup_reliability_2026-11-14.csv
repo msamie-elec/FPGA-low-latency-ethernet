@@ -1,0 +1,7 @@
+run_id,mode,completed,first_passes,first_trials,warm_passes,warm_trials,burst_pass,burst_fail,burst_error,missing_replies_reported,notes
+cold_start_20261113T194925642880Z,reset,true,10,10,10,10,20,0,0,0,manual BTN0 reset run
+cold_start_20261114T071530795020Z,power-cycle,true,5,5,5,5,10,0,0,0,operator selected power-cycle mode
+cold_start_20261114T075322485541Z,power-cycle,true,2,5,2,5,4,6,0,6000,failed cycles 3-5 first and warm
+cold_start_20261114T081602749896Z,power-cycle,false,0,1,0,1,0,2,0,2000,interrupted after one failed cycle
+cold_start_20261114T082003257008Z,power-cycle,false,2,3,2,3,4,0,2,0,third cycle UART magic error then zero bytes; missing reply count unavailable in error rows
+cold_start_20261114T082407890477Z,power-cycle,true,5,5,5,5,10,0,0,0,final reported manual settle trial; wait interval not measured
