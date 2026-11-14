@@ -129,7 +129,7 @@ python scripts/m4c_cold_start.py --com COM4 --mode reset --profile C --cycles 10
 
 The script prints `Cycle 1/10: press/release BTN0 on both boards; wait for PHY link; type READY then Enter to run FIRST burst:`. **Only at that prompt**, press/release BTN0 on **both** boards, wait for link, type the literal `READY` into the **same PowerShell window** and press **Enter**. Python then runs (a) one 1,000-request *first* burst and (b) one *warm* burst automatically. **Do not press BTN0 again between first and warm.** Repeat for each prompted cycle. If the script has ended and PowerShell is showing `PS C:\...>`, typing `READY` will instead produce `CommandNotFoundException`; that is not an FPGA failure.
 
-For the separately scoped **real power-cycle** experiment (not yet reported complete):
+For the separately scoped **power-cycle-mode** experiment (one operator-confirmed 5-cycle session recorded on 14 Nov 2026; repeat as needed):
 
 ```powershell
 python scripts/m4c_cold_start.py --com COM4 --mode power-cycle --profile C --cycles 5 --warm-runs 1
@@ -149,4 +149,4 @@ Here remove/restore **both USB power supplies** at each prompt. JTAG-programmed 
 - **Simulation waveform has no data:** Restart, rerun and ensure `tb_m4c_board_pair` and updated testbench signal names are loaded.
 - **Generated bitstream missing in archive:** Check `get_property STATUS [get_runs impl_1]`, `build_identity.txt`, run errors and whether `fpga_archive_current` was called.
 
-For release documentation, copy **sanitised** CSV/JSON into `evidence/` only after reviewing raw UART logs, timestamp/path metadata and permission to publish. Keep `build/`, `*.bit`, generated reports and local COM/JTAG identifiers out of the curated GitHub ZIP. See [results](VERIFICATION_AND_PERFORMANCE_V1.md), [constraints](XDC_AND_IO_REFERENCE.md) and [limitations](LIMITATIONS_V1.md).
+**Folder convention:** `tests/` holds executable automated test *definitions* and mocks; `tb/` holds HDL testbenches; `scripts/` holds operators and runners such as `m4c_cold_start.py`; **`build/hardware/` contains generated local results**, not source tests; curated, reviewed immutable copies of selected runs live in [`evidence/hardware/`](../evidence/hardware/README.md). This prevents output files from cluttering test code or being accidentally overwritten. For release documentation, copy sanitised new CSV/JSON into `evidence/` only after reviewing metadata and permission to publish. Keep `build/`, `*.bit`, generated reports and local COM/JTAG identifiers out of the curated GitHub ZIP. See [results](VERIFICATION_AND_PERFORMANCE_V1.md), [constraints](XDC_AND_IO_REFERENCE.md) and [limitations](LIMITATIONS_V1.md).
