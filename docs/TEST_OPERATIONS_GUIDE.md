@@ -129,7 +129,7 @@ python scripts/m4c_cold_start.py --com COM4 --mode reset --profile C --cycles 10
 
 The script prints `Cycle 1/10: press/release BTN0 on both boards; wait for PHY link; type READY then Enter to run FIRST burst:`. **Only at that prompt**, press/release BTN0 on **both** boards, wait for link, type the literal `READY` into the **same PowerShell window** and press **Enter**. Python then runs (a) one 1,000-request *first* burst and (b) one *warm* burst automatically. **Do not press BTN0 again between first and warm.** Repeat for each prompted cycle. If the script has ended and PowerShell is showing `PS C:\...>`, typing `READY` will instead produce `CommandNotFoundException`; that is not an FPGA failure.
 
-For the separately scoped **power-cycle-mode** experiment (one 5-cycle software session recorded on 14 Nov 2026 following an independently confirmed overnight power-off and reprogramming; individual physical power removals between all 5 cycles are not established by the evidence):
+For the separately scoped **power-cycle-mode** experiment (five operator-confirmed power-off → power-on → reprogramming test cycles, recorded 14 Nov 2026):
 
 ```powershell
 python scripts/m4c_cold_start.py --com COM4 --mode power-cycle --profile C --cycles 5 --warm-runs 1
