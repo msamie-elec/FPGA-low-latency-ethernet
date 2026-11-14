@@ -19,6 +19,8 @@ A two-FPGA demonstration of a low-latency synthetic market-data processing engin
 | Final benchmark | **9,000 / 9,000** | Nine 1,000-packet runs; no missing/duplicates/invalid replies |
 | Additional smoke test | **1,000 / 1,000** | Independent conservative run |
 
+**Additional hardware startup evidence (14 November 2026):** Profile C's latest manually controlled power-cycle trial passed **5/5 first bursts and 5/5 warm bursts** (10,000/10,000 replies, zero missing). Earlier trials include startup failures and two incomplete runs; the controlled waiting procedure is promising but the exact settling time and root cause were **not measured**. See [Startup/reset reliability and complete trial index](docs/STARTUP_RELIABILITY_2026-11-14.md). These startup results are additional to, not a replacement for, the original nine-run finite-burst benchmark.
+
 **Important:** The 100,000 figure refers to *100 MHz FPGA-measured request-launch spacing* during ~10 ms bursts, not independently observed PHY wire timestamps, indefinite sustainable throughput, maximum packet rate or one-way processing latency. The sequential RTT includes Ethernet PHY transfer and clock crossings.
 
 ## System architecture
