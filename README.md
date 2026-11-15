@@ -6,6 +6,8 @@ A two-FPGA demonstration of a low-latency synthetic market-data processing engin
 
 > **Scope:** A portfolio and research demonstrator using an original synthetic 16-byte feed record, not a production exchange feed, general-purpose Ethernet stack, trading venue or formally certified CDC implementation.
 
+**Upwork portfolio:** [Low-Latency FPGA Ethernet — view the project on my Upwork profile](https://www.upwork.com/freelancers/~016d7fb025a209e3a2) (Portfolio section).
+
 ## Key hardware-verified results
 
 | Metric | Result | Interpretation |
