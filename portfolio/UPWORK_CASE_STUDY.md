@@ -16,4 +16,6 @@ Physical tests demonstrated 200/200 correct sequential transactions and approxim
 
 **Portfolio cautions:** Demonstrator uses a synthetic fixed packet format. No production-exchange protocol, certified Ethernet appliance, PHY-only timing measurement or unverified benchmark claims.
 
-**Links:** [GitHub URL after publication] | [Demonstration video after recording]
+**Published Upwork portfolio:** [Low-Latency FPGA Ethernet — view on Upwork](https://www.upwork.com/freelancers/~016d7fb025a209e3a2) (Portfolio section).
+
+**GitHub source and reproduction:** [FPGA Low-Latency Ethernet](https://github.com/msamie-elec/FPGA-low-latency-ethernet).
